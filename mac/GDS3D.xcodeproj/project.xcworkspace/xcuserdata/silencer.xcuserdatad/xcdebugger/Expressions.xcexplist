@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "main:OpenGLView.mm">
+         <PersistentStrings>
+            <PersistentString
+               value = "GDSfile">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "Wm_Cocoa::move_mouse(int, int):OpenGLView.mm">
+         <PersistentStrings>
+            <PersistentString
+               value = "viewPoint">
+            </PersistentString>
+            <PersistentString
+               value = "screenPoint">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "WindowManager::commandLineParameters(int, char**):windowmanager.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "argv[1]">
+            </PersistentString>
+            <PersistentString
+               value = "argv[2]">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>
