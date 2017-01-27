@@ -1,0 +1,54 @@
+New in v1.9:
+- Improve HighLigth Speed for large design
+- Export geometry to gmsh with a GEO file
+
+New in v1.8:
+
+- Major architectural improvements in the code base structure.
+- Fixed some small rendering artifacts.
+- Ruler system now activated by hitting K button.
+- Hierarchical topcell window.
+- At startup, if invalid topcell, will pick the highest cell in the GDS.
+- Beta of net highlighting :-)
+
+New in v1.7:
+
+- Press F8 to capture a screenshot. 
+- Fixed small Exceed bug. 
+- Can now handle GDS files with PCELLs left intact.
+
+New in v1.6:
+
+- Major speed up under Mac OS. 
+- Added explode view mode and layer shortkeys. 
+
+New in v1.5:
+
+- Interface overhaul. 
+- Added dragable and resizable listboxes for legend, topcell selection and help. 
+- Added new controls (see help for info)
+
+New in v1.4:
+
+- Major OpenGL code rewrite. 
+- 1/4 of VRAM usage, 2x more FPS. 
+- 2x faster network loading.
+
+New in v1.3:
+
+- Cleanup of SKILL code. 
+- Improved ruler behavior.
+
+New in v1.2:
+
+- Large speed increase in Exceed 3D.
+
+New in v1.1:
+
+- Added a ruler. 
+- Fixed window aspect ratio. 
+- Fixed substrate size.
+
+v1.0:
+
+- Initial release.

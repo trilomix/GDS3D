@@ -1,0 +1,15 @@
+FIXME and suggestions
+
+- Update readme with new controls
+- Make an icon
+
+- Depth fighting in net highlighting 
+- ALT-F4 does not work on all platforms
+- Concentrate all 2D rendering functions in the Renderer
+- Provide central notification system in window manager
+- Manage FPS and frames in window manager
+- Create camera object?
+- Reform mouse capture behavior
+- Settings object in window manager
+- Fix color scale variable + performance
+- Render speed is lower than 1.7 with GLX and Exceed

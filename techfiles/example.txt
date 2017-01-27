@@ -1,0 +1,288 @@
+# This file describes how to render the layers in the GDS. 
+# You can make one file for each technology that you are using.
+
+# Do not remove this layer, it must always be here with GDS layer number 255
+LayerStart: Substrate
+Layer: 255
+Height: -900
+Thickness: 1200
+Red: 0.0
+Green: 1.0
+Blue: 1.0
+Filter: 0.5
+Metal: 0
+Show: 1
+LayerEnd
+
+# Start editing here
+LayerStart: N-Well
+Layer: 1		# GDS layer number
+Height: -300		# Start height
+Thickness: 520		# Stop height = start height + thickness
+Red: 0.25		# Color red component, [0,1]
+Green: 0.25		# Color green component, [0,1]
+Blue: 0.25		# Color blue component, [0,1]
+Filter: 0.0		# Keep at 0 (controls transparency)
+Metal: 0		# Not used at the moment
+Shortkey: 0		# Defines a shortkey from 0 to 9 to toggle the layer visibility. Can be pre-pended with any combination 
+			# of <Alt> <Ctrl> and <Shift> as modifiers
+Show: 1			# Shown during rendering
+LayerEnd
+
+LayerStart: P-Plus
+Layer: 2
+Height: 220
+Thickness: 100
+Red: 0.05
+Green: 0.99
+Blue: 0.05
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: N-Plus
+Layer: 3
+Height: 220
+Thickness: 100
+Red: 0.99
+Green: 0.53
+Blue: 0.05
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Active
+Layer: 4
+Height: 320
+Thickness: 20
+Red: 1.0
+Green: 1.0
+Blue: 0.0
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Poly
+Layer: 5
+Height: 320
+Thickness: 100
+Red: 0.91
+Green: 0.12
+Blue: 0.05
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Contact
+Layer: 6
+Height: 320
+Thickness: 300
+Red: 1.0
+Green: 0.9
+Blue: 0.75
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Metal 1
+Layer: 7
+Height: 620
+Thickness: 150
+Red: 0.0
+Green: 0.0
+Blue: 1.0
+Filter: 0.0
+Metal: 1
+Shortkey: 1
+Show: 1
+LayerEnd
+
+LayerStart: Via 1
+Layer: 8
+Height: 770
+Thickness: 200
+Red: 0.50
+Green: 0.0
+Blue: 1.0
+Filter: 0.0
+Metal: 0
+Shortkey: <Shift> 1
+Show: 1
+LayerEnd
+
+LayerStart: Metal 2
+Layer: 9
+Height: 970
+Thickness: 250
+Red: 1.0
+Green: 0.0
+Blue: 1.0
+Filter: 0.0
+Metal: 1
+Shortkey: 2
+Show: 1
+LayerEnd
+
+LayerStart: Via 2
+Layer: 10
+Height: 1220
+Thickness: 200
+Red: 0.5
+Green: 0.4
+Blue: 0.7
+Filter: 0.0
+Metal: 0
+Shortkey: <Shift> 2
+Show: 1
+LayerEnd
+
+LayerStart: Metal 3
+Layer: 11
+Height: 1420
+Thickness: 250
+Red: 0.0
+Green: 0.8
+Blue: 0.4
+Filter: 0.0
+Metal: 1
+Shortkey: 3
+Show: 1
+LayerEnd
+
+LayerStart: Via 3
+Layer: 12
+Height: 1670
+Thickness: 200
+Red: 0.5
+Green: 0.78
+Blue: 0.63
+Filter: 0.0
+Metal: 0
+Shortkey: <Shift> 3
+Show: 1
+LayerEnd
+
+LayerStart: Metal 4
+Layer: 13
+Height: 1870
+Thickness: 250
+Red: 1.0
+Green: 0.75
+Blue: 0.95
+Filter: 0.0
+Metal: 1
+Shortkey: 4
+Show: 1
+LayerEnd
+
+LayerStart: Via 4
+Layer: 14
+Height: 2120
+Thickness: 200
+Red: 0.93
+Green: 0.78
+Blue: 0.48
+Filter: 0.0
+Metal: 0
+Shortkey: <Shift> 4
+Show: 1
+LayerEnd
+
+LayerStart: Metal 5
+Layer: 15
+Height: 2320
+Thickness: 250
+Red: 0.85
+Green: 0.8
+Blue: 0.0
+Filter: 0.0
+Metal: 1
+Shortkey: 5
+Show: 1
+LayerEnd
+
+LayerStart: Via 5
+Layer: 16
+Height: 2570
+Thickness: 610
+Red: 0.85
+Green: 0.85
+Blue: 0.5
+Filter: 0.0
+Metal: 0
+Shortkey: <Shift> 5
+Show: 1
+LayerEnd
+
+LayerStart: Metal 6
+Layer: 17
+Height: 3180
+Thickness: 1000
+Red: 0.85
+Green: 0.9
+Blue: 1.0
+Filter: 0.0
+Metal: 1
+Shortkey: 6
+Show: 1
+LayerEnd
+
+LayerStart: Via 6
+Layer: 18
+Height: 4180
+Thickness: 600
+Red: 0.5
+Green: 0.73
+Blue: 0.71
+Filter: 0.0
+Metal: 0
+Shortkey: <Shift> 6
+Show: 1
+LayerEnd
+
+LayerStart: Metal 7
+Layer: 19
+Height: 4780
+Thickness: 1000
+Red: 0.15
+Green: 0.55
+Blue: 0.42
+Filter: 0.0
+Metal: 1
+Shortkey: 7
+Show: 1
+LayerEnd
+
+LayerStart: Via 7
+Layer: 20
+Height: 5780
+Thickness: 800
+Red: 0.58
+Green: 0.53
+Blue: 0.21
+Filter: 0.0
+Metal: 0
+Shortkey: <Shift> 7
+Show: 1
+LayerEnd
+
+LayerStart: Metal 8
+Layer: 21
+Height: 6580
+Thickness: 1500
+Red: 1.0
+Green: 0.5
+Blue: 0.0
+Filter: 0.0
+Metal: 1
+Shortkey: 8
+Show: 1
+LayerEnd
+
+# End of the file
+

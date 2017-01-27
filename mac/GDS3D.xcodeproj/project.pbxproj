@@ -1,0 +1,440 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		6067BB21160E08C900C04F5B /* OpenGLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6067BB20160E08C900C04F5B /* OpenGLView.mm */; };
+		6067BB27160E120A00C04F5B /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6067BB26160E120A00C04F5B /* GLUT.framework */; };
+		607097FE178978E30046BD08 /* ui_ruler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 607097FA178978E30046BD08 /* ui_ruler.cpp */; };
+		607097FF178978E30046BD08 /* ui_highlight.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 607097FC178978E30046BD08 /* ui_highlight.cpp */; };
+		60896EC2170082E100F0A0EF /* FRUSTUM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EB6170082E100F0A0EF /* FRUSTUM.cpp */; };
+		60896EC3170082E100F0A0EF /* AA_BOUNDING_BOX.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EB7170082E100F0A0EF /* AA_BOUNDING_BOX.cpp */; };
+		60896EC4170082E100F0A0EF /* MATRIX4X4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EBA170082E100F0A0EF /* MATRIX4X4.cpp */; };
+		60896EC5170082E100F0A0EF /* PLANE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EBC170082E100F0A0EF /* PLANE.cpp */; };
+		60896EC6170082E100F0A0EF /* VECTOR3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EBE170082E100F0A0EF /* VECTOR3D.cpp */; };
+		60896EC7170082E100F0A0EF /* VECTOR4D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EC0170082E100F0A0EF /* VECTOR4D.cpp */; };
+		60896EDA170082EE00F0A0EF /* gdsparse_ogl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EC9170082EE00F0A0EF /* gdsparse_ogl.cpp */; };
+		60896EDB170082EE00F0A0EF /* renderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896ECA170082EE00F0A0EF /* renderer.cpp */; };
+		60896EDC170082EE00F0A0EF /* listview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896ECB170082EE00F0A0EF /* listview.cpp */; };
+		60896EDD170082EE00F0A0EF /* gdsobject_ogl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896ECC170082EE00F0A0EF /* gdsobject_ogl.cpp */; };
+		60896EDE170082EE00F0A0EF /* win_keymap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896ECE170082EE00F0A0EF /* win_keymap.cpp */; };
+		60896EDF170082EE00F0A0EF /* win_legend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896ECF170082EE00F0A0EF /* win_legend.cpp */; };
+		60896EE0170082EE00F0A0EF /* win_topmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896ED1170082EE00F0A0EF /* win_topmap.cpp */; };
+		60896EE1170082EE00F0A0EF /* windowmanager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896ED3170082EE00F0A0EF /* windowmanager.cpp */; };
+		60896EF4170082F800F0A0EF /* gdsparse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EE2170082F800F0A0EF /* gdsparse.cpp */; };
+		60896EF5170082F800F0A0EF /* gdsobject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EE3170082F800F0A0EF /* gdsobject.cpp */; };
+		60896EF6170082F800F0A0EF /* gds_globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EE5170082F800F0A0EF /* gds_globals.cpp */; };
+		60896EF7170082F800F0A0EF /* gdsobjectlist.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EE6170082F800F0A0EF /* gdsobjectlist.cpp */; };
+		60896EF8170082F800F0A0EF /* gdspolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EE7170082F800F0A0EF /* gdspolygon.cpp */; };
+		60896EF9170082F800F0A0EF /* process_cfg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EE8170082F800F0A0EF /* process_cfg.cpp */; };
+		60896EFA170082F800F0A0EF /* gdstext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EEB170082F800F0A0EF /* gdstext.cpp */; };
+		60896EFB170082F800F0A0EF /* gdspath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60896EF2170082F800F0A0EF /* gdspath.cpp */; };
+		74E028770B819B0400B15674 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74E028760B819B0400B15674 /* OpenGL.framework */; };
+		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
+		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
+		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		29B97319FDCFA39411CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainMenu.nib; sourceTree = "<group>"; };
+		360B79C20C3D8C350085BCCF /* info.plist */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist.xml; path = info.plist; sourceTree = "<group>"; };
+		600E39D317E88334000BFB6E /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = main.h; path = mac/main.h; sourceTree = "<group>"; };
+		6067BB20160E08C900C04F5B /* OpenGLView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenGLView.mm; sourceTree = SOURCE_ROOT; };
+		6067BB26160E120A00C04F5B /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+		607097F9178978E30046BD08 /* ui_element.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui_element.h; path = gdsoglviewer/ui_element.h; sourceTree = "<group>"; };
+		607097FA178978E30046BD08 /* ui_ruler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ui_ruler.cpp; path = gdsoglviewer/ui_ruler.cpp; sourceTree = "<group>"; };
+		607097FB178978E30046BD08 /* ui_ruler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui_ruler.h; path = gdsoglviewer/ui_ruler.h; sourceTree = "<group>"; };
+		607097FC178978E30046BD08 /* ui_highlight.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ui_highlight.cpp; path = gdsoglviewer/ui_highlight.cpp; sourceTree = "<group>"; };
+		607097FD178978E30046BD08 /* ui_highlight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui_highlight.h; path = gdsoglviewer/ui_highlight.h; sourceTree = "<group>"; };
+		60896EB5170082E100F0A0EF /* AA_BOUNDING_BOX.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AA_BOUNDING_BOX.h; path = math/AA_BOUNDING_BOX.h; sourceTree = "<group>"; };
+		60896EB6170082E100F0A0EF /* FRUSTUM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FRUSTUM.cpp; path = math/FRUSTUM.cpp; sourceTree = "<group>"; };
+		60896EB7170082E100F0A0EF /* AA_BOUNDING_BOX.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AA_BOUNDING_BOX.cpp; path = math/AA_BOUNDING_BOX.cpp; sourceTree = "<group>"; };
+		60896EB8170082E100F0A0EF /* Maths.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Maths.h; path = math/Maths.h; sourceTree = "<group>"; };
+		60896EB9170082E100F0A0EF /* FRUSTUM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FRUSTUM.h; path = math/FRUSTUM.h; sourceTree = "<group>"; };
+		60896EBA170082E100F0A0EF /* MATRIX4X4.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MATRIX4X4.cpp; path = math/MATRIX4X4.cpp; sourceTree = "<group>"; };
+		60896EBB170082E100F0A0EF /* MATRIX4X4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MATRIX4X4.h; path = math/MATRIX4X4.h; sourceTree = "<group>"; };
+		60896EBC170082E100F0A0EF /* PLANE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PLANE.cpp; path = math/PLANE.cpp; sourceTree = "<group>"; };
+		60896EBD170082E100F0A0EF /* PLANE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PLANE.h; path = math/PLANE.h; sourceTree = "<group>"; };
+		60896EBE170082E100F0A0EF /* VECTOR3D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VECTOR3D.cpp; path = math/VECTOR3D.cpp; sourceTree = "<group>"; };
+		60896EBF170082E100F0A0EF /* VECTOR3D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VECTOR3D.h; path = math/VECTOR3D.h; sourceTree = "<group>"; };
+		60896EC0170082E100F0A0EF /* VECTOR4D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VECTOR4D.cpp; path = math/VECTOR4D.cpp; sourceTree = "<group>"; };
+		60896EC1170082E100F0A0EF /* VECTOR4D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VECTOR4D.h; path = math/VECTOR4D.h; sourceTree = "<group>"; };
+		60896EC8170082EE00F0A0EF /* gdsparse_ogl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gdsparse_ogl.h; path = gdsoglviewer/gdsparse_ogl.h; sourceTree = "<group>"; };
+		60896EC9170082EE00F0A0EF /* gdsparse_ogl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gdsparse_ogl.cpp; path = gdsoglviewer/gdsparse_ogl.cpp; sourceTree = "<group>"; };
+		60896ECA170082EE00F0A0EF /* renderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = renderer.cpp; path = gdsoglviewer/renderer.cpp; sourceTree = "<group>"; };
+		60896ECB170082EE00F0A0EF /* listview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = listview.cpp; path = gdsoglviewer/listview.cpp; sourceTree = "<group>"; };
+		60896ECC170082EE00F0A0EF /* gdsobject_ogl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gdsobject_ogl.cpp; path = gdsoglviewer/gdsobject_ogl.cpp; sourceTree = "<group>"; };
+		60896ECD170082EE00F0A0EF /* windowmanager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = windowmanager.h; path = gdsoglviewer/windowmanager.h; sourceTree = "<group>"; };
+		60896ECE170082EE00F0A0EF /* win_keymap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = win_keymap.cpp; path = gdsoglviewer/win_keymap.cpp; sourceTree = "<group>"; };
+		60896ECF170082EE00F0A0EF /* win_legend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = win_legend.cpp; path = gdsoglviewer/win_legend.cpp; sourceTree = "<group>"; };
+		60896ED0170082EE00F0A0EF /* listview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = listview.h; path = gdsoglviewer/listview.h; sourceTree = "<group>"; };
+		60896ED1170082EE00F0A0EF /* win_topmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = win_topmap.cpp; path = gdsoglviewer/win_topmap.cpp; sourceTree = "<group>"; };
+		60896ED2170082EE00F0A0EF /* renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = renderer.h; path = gdsoglviewer/renderer.h; sourceTree = "<group>"; };
+		60896ED3170082EE00F0A0EF /* windowmanager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = windowmanager.cpp; path = gdsoglviewer/windowmanager.cpp; sourceTree = "<group>"; };
+		60896ED4170082EE00F0A0EF /* key_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = key_list.h; path = gdsoglviewer/key_list.h; sourceTree = "<group>"; };
+		60896ED5170082EE00F0A0EF /* win_keymap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = win_keymap.h; path = gdsoglviewer/win_keymap.h; sourceTree = "<group>"; };
+		60896ED6170082EE00F0A0EF /* win_legend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = win_legend.h; path = gdsoglviewer/win_legend.h; sourceTree = "<group>"; };
+		60896ED7170082EE00F0A0EF /* win_topmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = win_topmap.h; path = gdsoglviewer/win_topmap.h; sourceTree = "<group>"; };
+		60896ED8170082EE00F0A0EF /* gdsobject_ogl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gdsobject_ogl.h; path = gdsoglviewer/gdsobject_ogl.h; sourceTree = "<group>"; };
+		60896ED9170082EE00F0A0EF /* glext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = glext.h; path = gdsoglviewer/glext.h; sourceTree = "<group>"; };
+		60896EE2170082F800F0A0EF /* gdsparse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gdsparse.cpp; path = libgdsto3d/gdsparse.cpp; sourceTree = "<group>"; };
+		60896EE3170082F800F0A0EF /* gdsobject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gdsobject.cpp; path = libgdsto3d/gdsobject.cpp; sourceTree = "<group>"; };
+		60896EE4170082F800F0A0EF /* gds_globals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gds_globals.h; path = libgdsto3d/gds_globals.h; sourceTree = "<group>"; };
+		60896EE5170082F800F0A0EF /* gds_globals.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gds_globals.cpp; path = libgdsto3d/gds_globals.cpp; sourceTree = "<group>"; };
+		60896EE6170082F800F0A0EF /* gdsobjectlist.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gdsobjectlist.cpp; path = libgdsto3d/gdsobjectlist.cpp; sourceTree = "<group>"; };
+		60896EE7170082F800F0A0EF /* gdspolygon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gdspolygon.cpp; path = libgdsto3d/gdspolygon.cpp; sourceTree = "<group>"; };
+		60896EE8170082F800F0A0EF /* process_cfg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = process_cfg.cpp; path = libgdsto3d/process_cfg.cpp; sourceTree = "<group>"; };
+		60896EE9170082F800F0A0EF /* gdspolygon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gdspolygon.h; path = libgdsto3d/gdspolygon.h; sourceTree = "<group>"; };
+		60896EEA170082F800F0A0EF /* gdsobject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gdsobject.h; path = libgdsto3d/gdsobject.h; sourceTree = "<group>"; };
+		60896EEB170082F800F0A0EF /* gdstext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gdstext.cpp; path = libgdsto3d/gdstext.cpp; sourceTree = "<group>"; };
+		60896EEC170082F800F0A0EF /* gdsobjectlist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gdsobjectlist.h; path = libgdsto3d/gdsobjectlist.h; sourceTree = "<group>"; };
+		60896EED170082F800F0A0EF /* gdsparse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gdsparse.h; path = libgdsto3d/gdsparse.h; sourceTree = "<group>"; };
+		60896EEE170082F800F0A0EF /* process_cfg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = process_cfg.h; path = libgdsto3d/process_cfg.h; sourceTree = "<group>"; };
+		60896EEF170082F800F0A0EF /* gdselements.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gdselements.h; path = libgdsto3d/gdselements.h; sourceTree = "<group>"; };
+		60896EF0170082F800F0A0EF /* gdspath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gdspath.h; path = libgdsto3d/gdspath.h; sourceTree = "<group>"; };
+		60896EF1170082F800F0A0EF /* gdstext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gdstext.h; path = libgdsto3d/gdstext.h; sourceTree = "<group>"; };
+		60896EF2170082F800F0A0EF /* gdspath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gdspath.cpp; path = libgdsto3d/gdspath.cpp; sourceTree = "<group>"; };
+		74E028760B819B0400B15674 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		8D1107320486CEB800E47090 /* GDS3D.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GDS3D.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D11072E0486CEB800E47090 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6067BB27160E120A00C04F5B /* GLUT.framework in Frameworks */,
+				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
+				74E028770B819B0400B15674 /* OpenGL.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D1107320486CEB800E47090 /* GDS3D.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* SimpleFBO */ = {
+			isa = PBXGroup;
+			children = (
+				74E028760B819B0400B15674 /* OpenGL.framework */,
+				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
+				6067BB26160E120A00C04F5B /* GLUT.framework */,
+				36B67AA00E3657D500695250 /* Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+			);
+			name = SimpleFBO;
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				360B79C20C3D8C350085BCCF /* info.plist */,
+				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
+				29B97318FDCFA39411CA2CEA /* MainMenu.nib */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		36B67AA00E3657D500695250 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				60896E6C1700813400F0A0EF /* cocoa */,
+				60896E6B1700812A00F0A0EF /* libgdsto3d */,
+				60896E6A1700812000F0A0EF /* gdsoglviewer */,
+				60896E691700811900F0A0EF /* math */,
+			);
+			name = Sources;
+			path = ..;
+			sourceTree = SOURCE_ROOT;
+		};
+		60896E691700811900F0A0EF /* math */ = {
+			isa = PBXGroup;
+			children = (
+				60896EB5170082E100F0A0EF /* AA_BOUNDING_BOX.h */,
+				60896EB6170082E100F0A0EF /* FRUSTUM.cpp */,
+				60896EB7170082E100F0A0EF /* AA_BOUNDING_BOX.cpp */,
+				60896EB8170082E100F0A0EF /* Maths.h */,
+				60896EB9170082E100F0A0EF /* FRUSTUM.h */,
+				60896EBA170082E100F0A0EF /* MATRIX4X4.cpp */,
+				60896EBB170082E100F0A0EF /* MATRIX4X4.h */,
+				60896EBC170082E100F0A0EF /* PLANE.cpp */,
+				60896EBD170082E100F0A0EF /* PLANE.h */,
+				60896EBE170082E100F0A0EF /* VECTOR3D.cpp */,
+				60896EBF170082E100F0A0EF /* VECTOR3D.h */,
+				60896EC0170082E100F0A0EF /* VECTOR4D.cpp */,
+				60896EC1170082E100F0A0EF /* VECTOR4D.h */,
+			);
+			name = math;
+			sourceTree = "<group>";
+		};
+		60896E6A1700812000F0A0EF /* gdsoglviewer */ = {
+			isa = PBXGroup;
+			children = (
+				607097F9178978E30046BD08 /* ui_element.h */,
+				607097FA178978E30046BD08 /* ui_ruler.cpp */,
+				607097FB178978E30046BD08 /* ui_ruler.h */,
+				607097FC178978E30046BD08 /* ui_highlight.cpp */,
+				607097FD178978E30046BD08 /* ui_highlight.h */,
+				60896EC8170082EE00F0A0EF /* gdsparse_ogl.h */,
+				60896EC9170082EE00F0A0EF /* gdsparse_ogl.cpp */,
+				60896ECA170082EE00F0A0EF /* renderer.cpp */,
+				60896ECB170082EE00F0A0EF /* listview.cpp */,
+				60896ECC170082EE00F0A0EF /* gdsobject_ogl.cpp */,
+				60896ECD170082EE00F0A0EF /* windowmanager.h */,
+				60896ECE170082EE00F0A0EF /* win_keymap.cpp */,
+				60896ECF170082EE00F0A0EF /* win_legend.cpp */,
+				60896ED0170082EE00F0A0EF /* listview.h */,
+				60896ED1170082EE00F0A0EF /* win_topmap.cpp */,
+				60896ED2170082EE00F0A0EF /* renderer.h */,
+				60896ED3170082EE00F0A0EF /* windowmanager.cpp */,
+				60896ED4170082EE00F0A0EF /* key_list.h */,
+				60896ED5170082EE00F0A0EF /* win_keymap.h */,
+				60896ED6170082EE00F0A0EF /* win_legend.h */,
+				60896ED7170082EE00F0A0EF /* win_topmap.h */,
+				60896ED8170082EE00F0A0EF /* gdsobject_ogl.h */,
+				60896ED9170082EE00F0A0EF /* glext.h */,
+			);
+			name = gdsoglviewer;
+			sourceTree = "<group>";
+		};
+		60896E6B1700812A00F0A0EF /* libgdsto3d */ = {
+			isa = PBXGroup;
+			children = (
+				60896EE2170082F800F0A0EF /* gdsparse.cpp */,
+				60896EE3170082F800F0A0EF /* gdsobject.cpp */,
+				60896EE4170082F800F0A0EF /* gds_globals.h */,
+				60896EE5170082F800F0A0EF /* gds_globals.cpp */,
+				60896EE6170082F800F0A0EF /* gdsobjectlist.cpp */,
+				60896EE7170082F800F0A0EF /* gdspolygon.cpp */,
+				60896EE8170082F800F0A0EF /* process_cfg.cpp */,
+				60896EE9170082F800F0A0EF /* gdspolygon.h */,
+				60896EEA170082F800F0A0EF /* gdsobject.h */,
+				60896EEB170082F800F0A0EF /* gdstext.cpp */,
+				60896EEC170082F800F0A0EF /* gdsobjectlist.h */,
+				60896EED170082F800F0A0EF /* gdsparse.h */,
+				60896EEE170082F800F0A0EF /* process_cfg.h */,
+				60896EEF170082F800F0A0EF /* gdselements.h */,
+				60896EF0170082F800F0A0EF /* gdspath.h */,
+				60896EF1170082F800F0A0EF /* gdstext.h */,
+				60896EF2170082F800F0A0EF /* gdspath.cpp */,
+			);
+			name = libgdsto3d;
+			sourceTree = "<group>";
+		};
+		60896E6C1700813400F0A0EF /* cocoa */ = {
+			isa = PBXGroup;
+			children = (
+				600E39D317E88334000BFB6E /* main.h */,
+				6067BB20160E08C900C04F5B /* OpenGLView.mm */,
+			);
+			name = cocoa;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8D1107260486CEB800E47090 /* GDS3D */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "GDS3D" */;
+			buildPhases = (
+				8D1107290486CEB800E47090 /* Resources */,
+				8D11072C0486CEB800E47090 /* Sources */,
+				8D11072E0486CEB800E47090 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GDS3D;
+			productInstallPath = "$(HOME)/Applications";
+			productName = SimpleFBO;
+			productReference = 8D1107320486CEB800E47090 /* GDS3D.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 0820;
+			};
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "GDS3D" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 29B97314FDCFA39411CA2CEA /* SimpleFBO */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8D1107260486CEB800E47090 /* GDS3D */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8D1107290486CEB800E47090 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */,
+				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8D11072C0486CEB800E47090 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6067BB21160E08C900C04F5B /* OpenGLView.mm in Sources */,
+				60896EC2170082E100F0A0EF /* FRUSTUM.cpp in Sources */,
+				60896EC3170082E100F0A0EF /* AA_BOUNDING_BOX.cpp in Sources */,
+				60896EC4170082E100F0A0EF /* MATRIX4X4.cpp in Sources */,
+				60896EC5170082E100F0A0EF /* PLANE.cpp in Sources */,
+				60896EC6170082E100F0A0EF /* VECTOR3D.cpp in Sources */,
+				60896EC7170082E100F0A0EF /* VECTOR4D.cpp in Sources */,
+				60896EDA170082EE00F0A0EF /* gdsparse_ogl.cpp in Sources */,
+				60896EDB170082EE00F0A0EF /* renderer.cpp in Sources */,
+				60896EDC170082EE00F0A0EF /* listview.cpp in Sources */,
+				60896EDD170082EE00F0A0EF /* gdsobject_ogl.cpp in Sources */,
+				60896EDE170082EE00F0A0EF /* win_keymap.cpp in Sources */,
+				60896EDF170082EE00F0A0EF /* win_legend.cpp in Sources */,
+				60896EE0170082EE00F0A0EF /* win_topmap.cpp in Sources */,
+				60896EE1170082EE00F0A0EF /* windowmanager.cpp in Sources */,
+				60896EF4170082F800F0A0EF /* gdsparse.cpp in Sources */,
+				60896EF5170082F800F0A0EF /* gdsobject.cpp in Sources */,
+				60896EF6170082F800F0A0EF /* gds_globals.cpp in Sources */,
+				60896EF7170082F800F0A0EF /* gdsobjectlist.cpp in Sources */,
+				60896EF8170082F800F0A0EF /* gdspolygon.cpp in Sources */,
+				60896EF9170082F800F0A0EF /* process_cfg.cpp in Sources */,
+				60896EFA170082F800F0A0EF /* gdstext.cpp in Sources */,
+				60896EFB170082F800F0A0EF /* gdspath.cpp in Sources */,
+				607097FE178978E30046BD08 /* ui_ruler.cpp in Sources */,
+				607097FF178978E30046BD08 /* ui_highlight.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		089C165CFE840E0CC02AAC07 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				089C165DFE840E0CC02AAC07 /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		29B97318FDCFA39411CA2CEA /* MainMenu.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				29B97319FDCFA39411CA2CEA /* English */,
+			);
+			name = MainMenu.nib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		C01FCF4B08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				INFOPLIST_FILE = info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = GDS3D;
+				PRODUCT_NAME = GDS3D;
+			};
+			name = Debug;
+		};
+		C01FCF4C08A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				INFOPLIST_FILE = info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = GDS3D;
+				PRODUCT_NAME = GDS3D;
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CONFIGURATION_BUILD_DIR = .;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_TESTABILITY = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_PROFILING_CODE = NO;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SYMROOT = .;
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CONFIGURATION_BUILD_DIR = .;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_PROFILING_CODE = NO;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				SDKROOT = macosx;
+				SYMROOT = .;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "GDS3D" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4B08A954540054247B /* Debug */,
+				C01FCF4C08A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "GDS3D" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4F08A954540054247B /* Debug */,
+				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}
