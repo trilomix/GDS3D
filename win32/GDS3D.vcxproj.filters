@@ -1,0 +1,233 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files\gdsoglviewer">
+      <UniqueIdentifier>{8c0cb6f5-a640-47a6-8e48-9be135004fb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\gdsoglviewer">
+      <UniqueIdentifier>{9dfabd11-71b6-4158-94c1-8b2e59164a73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\libgdsto3d">
+      <UniqueIdentifier>{19d74829-e907-4161-9c29-d94e7e995d36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\libgdsto3d">
+      <UniqueIdentifier>{f8c83175-b287-4e21-92ab-058b8f447f69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\math">
+      <UniqueIdentifier>{20d7c0b7-d462-4e52-b19e-073530f72d8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\math">
+      <UniqueIdentifier>{5f3260bc-d85a-40e1-b629-718d26060e65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\win32">
+      <UniqueIdentifier>{45f0c6e3-b651-4316-83b6-eeb8ac6c898d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\win32">
+      <UniqueIdentifier>{e7087827-fe3b-45c4-8fd5-c40874833529}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\gdsoglviewer\gdsobject_ogl.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\gdsparse_ogl.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libgdsto3d\process_cfg.h">
+      <Filter>Header Files\libgdsto3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libgdsto3d\gds_globals.h">
+      <Filter>Header Files\libgdsto3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libgdsto3d\gdselements.h">
+      <Filter>Header Files\libgdsto3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libgdsto3d\gdsobject.h">
+      <Filter>Header Files\libgdsto3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libgdsto3d\gdsparse.h">
+      <Filter>Header Files\libgdsto3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libgdsto3d\gdspath.h">
+      <Filter>Header Files\libgdsto3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libgdsto3d\gdspolygon.h">
+      <Filter>Header Files\libgdsto3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libgdsto3d\gdstext.h">
+      <Filter>Header Files\libgdsto3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\listview.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\glext.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libgdsto3d\gdsobjectlist.h">
+      <Filter>Header Files\libgdsto3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\renderer.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\windowmanager.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\win_topmap.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\win_keymap.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\win_legend.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\key_list.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\AA_BOUNDING_BOX.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\VECTOR4D.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\FRUSTUM.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\Maths.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\MATRIX4X4.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\PLANE.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\VECTOR3D.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>Header Files\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\ui_element.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\ui_ruler.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\ui_highlight.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libgdsto3d\assembly_cfg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\outputStream.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gdsoglviewer\geopolygon.h">
+      <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\gdsoglviewer\gdsobject_ogl.cpp">
+      <Filter>Source Files\gdsoglviewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gdsoglviewer\gdsparse_ogl.cpp">
+      <Filter>Source Files\gdsoglviewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\process_cfg.cpp">
+      <Filter>Source Files\libgdsto3d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\gds_globals.cpp">
+      <Filter>Source Files\libgdsto3d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\gdsobject.cpp">
+      <Filter>Source Files\libgdsto3d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\gdsparse.cpp">
+      <Filter>Source Files\libgdsto3d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\gdspath.cpp">
+      <Filter>Source Files\libgdsto3d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\gdspolygon.cpp">
+      <Filter>Source Files\libgdsto3d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\gdstext.cpp">
+      <Filter>Source Files\libgdsto3d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gdsoglviewer\listview.cpp">
+      <Filter>Source Files\gdsoglviewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\gdsobjectlist.cpp">
+      <Filter>Source Files\libgdsto3d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gdsoglviewer\renderer.cpp">
+      <Filter>Source Files\gdsoglviewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gdsoglviewer\windowmanager.cpp">
+      <Filter>Source Files\gdsoglviewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gdsoglviewer\win_topmap.cpp">
+      <Filter>Source Files\gdsoglviewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gdsoglviewer\win_keymap.cpp">
+      <Filter>Source Files\gdsoglviewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gdsoglviewer\win_legend.cpp">
+      <Filter>Source Files\gdsoglviewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\AA_BOUNDING_BOX.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\FRUSTUM.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\MATRIX4X4.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\PLANE.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\VECTOR3D.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\VECTOR4D.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gdsoglviewer\ui_ruler.cpp">
+      <Filter>Source Files\gdsoglviewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gdsoglviewer\ui_highlight.cpp">
+      <Filter>Source Files\gdsoglviewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\assembly_cfg.cpp">
+      <Filter>Source Files\libgdsto3d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\gdselements.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gdsoglviewer\outputStream.cpp">
+      <Filter>Source Files\gdsoglviewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gdsoglviewer\geopolygon.cpp">
+      <Filter>Source Files\gdsoglviewer</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\CHANGELOG.txt" />
+    <None Include="..\FIXME.txt" />
+    <None Include="..\LICENSE.txt" />
+    <None Include="..\README.txt" />
+  </ItemGroup>
+</Project>
