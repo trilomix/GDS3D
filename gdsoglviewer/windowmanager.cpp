@@ -87,15 +87,8 @@ bool WindowManager::commandLineParameters(int argc, char *argv[])
 	char *processfile=NULL;
 	char *assemblyfile = NULL;
 	char *topcell=NULL;
-	bool ans;
+	bool ans=true;
 
-/*	float X;
-	float Y;
-	float Z;
-	float angle;
-	int Flipped;
-	bool FlipChip;
-*/
 	for(int i=1; i<argc; i++){
 		if(argv[i][0] == '-'){
 			if(strncmp(argv[i], "-i", strlen("-i"))==0){

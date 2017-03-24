@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 48;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -37,6 +37,13 @@
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		DFD86D031E77B0F300506AB0 /* clipper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DFD86D011E77B0F300506AB0 /* clipper.cpp */; };
+		DFD86D061E83B0B900506AB0 /* Voronoi3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DFD86D041E83B0B900506AB0 /* Voronoi3D.cpp */; };
+		DFD86D0C1E83B12E00506AB0 /* voro++.cc in Sources */ = {isa = PBXBuildFile; fileRef = DFD86D0A1E83B12E00506AB0 /* voro++.cc */; };
+		DFED73BD1E35B26200625EAF /* gdselements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DFED73BC1E35B26200625EAF /* gdselements.cpp */; };
+		DFED73C01E35B29100625EAF /* assembly_cfg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DFED73BE1E35B29100625EAF /* assembly_cfg.cpp */; };
+		DFED73C21E35B30A00625EAF /* outputStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DFED73C11E35B30A00625EAF /* outputStream.cpp */; };
+		DFED73C61E35B6C200625EAF /* geopolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DFED73C41E35B6C200625EAF /* geopolygon.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -102,6 +109,19 @@
 		60896EF2170082F800F0A0EF /* gdspath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gdspath.cpp; path = libgdsto3d/gdspath.cpp; sourceTree = "<group>"; };
 		74E028760B819B0400B15674 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		8D1107320486CEB800E47090 /* GDS3D.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GDS3D.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DFD86D011E77B0F300506AB0 /* clipper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = clipper.cpp; path = libgdsto3d/clipper/clipper.cpp; sourceTree = "<group>"; };
+		DFD86D021E77B0F300506AB0 /* clipper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = clipper.hpp; path = libgdsto3d/clipper/clipper.hpp; sourceTree = "<group>"; };
+		DFD86D041E83B0B900506AB0 /* Voronoi3D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Voronoi3D.cpp; path = libgdsto3d/Voronoi3D.cpp; sourceTree = "<group>"; };
+		DFD86D051E83B0B900506AB0 /* Voronoi3D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Voronoi3D.h; path = libgdsto3d/Voronoi3D.h; sourceTree = "<group>"; };
+		DFD86D0A1E83B12E00506AB0 /* voro++.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "voro++.cc"; path = "libgdsto3d/voro++/src/voro++.cc"; sourceTree = "<group>"; };
+		DFD86D0B1E83B12E00506AB0 /* voro++.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = "voro++.hh"; path = "libgdsto3d/voro++/src/voro++.hh"; sourceTree = "<group>"; };
+		DFED73BC1E35B26200625EAF /* gdselements.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gdselements.cpp; path = libgdsto3d/gdselements.cpp; sourceTree = "<group>"; };
+		DFED73BE1E35B29100625EAF /* assembly_cfg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = assembly_cfg.cpp; path = libgdsto3d/assembly_cfg.cpp; sourceTree = "<group>"; };
+		DFED73BF1E35B29100625EAF /* assembly_cfg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = assembly_cfg.h; path = libgdsto3d/assembly_cfg.h; sourceTree = "<group>"; };
+		DFED73C11E35B30A00625EAF /* outputStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = outputStream.cpp; path = gdsoglviewer/outputStream.cpp; sourceTree = "<group>"; };
+		DFED73C31E35B35000625EAF /* outputStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = outputStream.h; path = gdsoglviewer/outputStream.h; sourceTree = "<group>"; };
+		DFED73C41E35B6C200625EAF /* geopolygon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = geopolygon.cpp; path = gdsoglviewer/geopolygon.cpp; sourceTree = "<group>"; };
+		DFED73C51E35B6C200625EAF /* geopolygon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = geopolygon.h; path = gdsoglviewer/geopolygon.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,6 +172,7 @@
 		36B67AA00E3657D500695250 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				DFD86D071E83B0C400506AB0 /* contrib */,
 				60896E6C1700813400F0A0EF /* cocoa */,
 				60896E6B1700812A00F0A0EF /* libgdsto3d */,
 				60896E6A1700812000F0A0EF /* gdsoglviewer */,
@@ -184,6 +205,12 @@
 		60896E6A1700812000F0A0EF /* gdsoglviewer */ = {
 			isa = PBXGroup;
 			children = (
+				DFD86D041E83B0B900506AB0 /* Voronoi3D.cpp */,
+				DFD86D051E83B0B900506AB0 /* Voronoi3D.h */,
+				DFED73C41E35B6C200625EAF /* geopolygon.cpp */,
+				DFED73C51E35B6C200625EAF /* geopolygon.h */,
+				DFED73C31E35B35000625EAF /* outputStream.h */,
+				DFED73C11E35B30A00625EAF /* outputStream.cpp */,
 				607097F9178978E30046BD08 /* ui_element.h */,
 				607097FA178978E30046BD08 /* ui_ruler.cpp */,
 				607097FB178978E30046BD08 /* ui_ruler.h */,
@@ -214,6 +241,11 @@
 		60896E6B1700812A00F0A0EF /* libgdsto3d */ = {
 			isa = PBXGroup;
 			children = (
+				DFD86D011E77B0F300506AB0 /* clipper.cpp */,
+				DFD86D021E77B0F300506AB0 /* clipper.hpp */,
+				DFED73BE1E35B29100625EAF /* assembly_cfg.cpp */,
+				DFED73BF1E35B29100625EAF /* assembly_cfg.h */,
+				DFED73BC1E35B26200625EAF /* gdselements.cpp */,
 				60896EE2170082F800F0A0EF /* gdsparse.cpp */,
 				60896EE3170082F800F0A0EF /* gdsobject.cpp */,
 				60896EE4170082F800F0A0EF /* gds_globals.h */,
@@ -242,6 +274,15 @@
 				6067BB20160E08C900C04F5B /* OpenGLView.mm */,
 			);
 			name = cocoa;
+			sourceTree = "<group>";
+		};
+		DFD86D071E83B0C400506AB0 /* contrib */ = {
+			isa = PBXGroup;
+			children = (
+				DFD86D0A1E83B12E00506AB0 /* voro++.cc */,
+				DFD86D0B1E83B12E00506AB0 /* voro++.hh */,
+			);
+			name = contrib;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -275,7 +316,7 @@
 				LastUpgradeCheck = 0820;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "GDS3D" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -308,13 +349,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				6067BB21160E08C900C04F5B /* OpenGLView.mm in Sources */,
+				DFED73C01E35B29100625EAF /* assembly_cfg.cpp in Sources */,
 				60896EC2170082E100F0A0EF /* FRUSTUM.cpp in Sources */,
 				60896EC3170082E100F0A0EF /* AA_BOUNDING_BOX.cpp in Sources */,
 				60896EC4170082E100F0A0EF /* MATRIX4X4.cpp in Sources */,
 				60896EC5170082E100F0A0EF /* PLANE.cpp in Sources */,
+				DFED73BD1E35B26200625EAF /* gdselements.cpp in Sources */,
 				60896EC6170082E100F0A0EF /* VECTOR3D.cpp in Sources */,
 				60896EC7170082E100F0A0EF /* VECTOR4D.cpp in Sources */,
 				60896EDA170082EE00F0A0EF /* gdsparse_ogl.cpp in Sources */,
+				DFED73C21E35B30A00625EAF /* outputStream.cpp in Sources */,
 				60896EDB170082EE00F0A0EF /* renderer.cpp in Sources */,
 				60896EDC170082EE00F0A0EF /* listview.cpp in Sources */,
 				60896EDD170082EE00F0A0EF /* gdsobject_ogl.cpp in Sources */,
@@ -325,9 +369,13 @@
 				60896EF4170082F800F0A0EF /* gdsparse.cpp in Sources */,
 				60896EF5170082F800F0A0EF /* gdsobject.cpp in Sources */,
 				60896EF6170082F800F0A0EF /* gds_globals.cpp in Sources */,
+				DFD86D031E77B0F300506AB0 /* clipper.cpp in Sources */,
 				60896EF7170082F800F0A0EF /* gdsobjectlist.cpp in Sources */,
+				DFD86D061E83B0B900506AB0 /* Voronoi3D.cpp in Sources */,
 				60896EF8170082F800F0A0EF /* gdspolygon.cpp in Sources */,
+				DFD86D0C1E83B12E00506AB0 /* voro++.cc in Sources */,
 				60896EF9170082F800F0A0EF /* process_cfg.cpp in Sources */,
+				DFED73C61E35B6C200625EAF /* geopolygon.cpp in Sources */,
 				60896EFA170082F800F0A0EF /* gdstext.cpp in Sources */,
 				60896EFB170082F800F0A0EF /* gdspath.cpp in Sources */,
 				607097FE178978E30046BD08 /* ui_ruler.cpp in Sources */,
@@ -360,8 +408,9 @@
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_USE_OPTIMIZATION_PROFILE = NO;
 				COMBINE_HIDPI_IMAGES = YES;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_VERSION = "";
 				INFOPLIST_FILE = info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = GDS3D;
 				PRODUCT_NAME = GDS3D;
@@ -371,8 +420,9 @@
 		C01FCF4C08A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_USE_OPTIMIZATION_PROFILE = NO;
 				COMBINE_HIDPI_IMAGES = YES;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_VERSION = "";
 				INFOPLIST_FILE = info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = GDS3D;
 				PRODUCT_NAME = GDS3D;
@@ -382,34 +432,43 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CONFIGURATION_BUILD_DIR = .;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_TESTABILITY = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_PROFILING_CODE = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				LD_GENERATE_MAP_FILE = NO;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				ONLY_ACTIVE_ARCH = YES;
+				"OTHER_LDFLAGS[arch=*]" = "-ObjC";
 				SDKROOT = macosx;
 				SYMROOT = .;
+				WARNING_LDFLAGS = "-v";
 			};
 			name = Debug;
 		};
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CONFIGURATION_BUILD_DIR = .;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_PROFILING_CODE = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				LD_GENERATE_MAP_FILE = NO;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				SDKROOT = macosx;
 				SYMROOT = .;
+				WARNING_LDFLAGS = "-v";
 			};
 			name = Release;
 		};

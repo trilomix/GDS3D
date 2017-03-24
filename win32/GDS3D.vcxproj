@@ -52,6 +52,7 @@
     <ClInclude Include="..\libgdsto3d\gdstext.h" />
     <ClInclude Include="..\libgdsto3d\gds_globals.h" />
     <ClInclude Include="..\libgdsto3d\process_cfg.h" />
+    <ClInclude Include="..\libgdsto3d\voro++\src\voro++.hh" />
     <ClInclude Include="..\math\AA_BOUNDING_BOX.h" />
     <ClInclude Include="..\math\FRUSTUM.h" />
     <ClInclude Include="..\math\Maths.h" />
@@ -75,6 +76,7 @@
     <ClCompile Include="..\gdsoglviewer\win_legend.cpp" />
     <ClCompile Include="..\gdsoglviewer\win_topmap.cpp" />
     <ClCompile Include="..\libgdsto3d\assembly_cfg.cpp" />
+    <ClCompile Include="..\libgdsto3d\clipper\clipper.cpp" />
     <ClCompile Include="..\libgdsto3d\gdselements.cpp" />
     <ClCompile Include="..\libgdsto3d\gdsobject.cpp" />
     <ClCompile Include="..\libgdsto3d\gdsobjectlist.cpp" />
@@ -84,6 +86,8 @@
     <ClCompile Include="..\libgdsto3d\gdstext.cpp" />
     <ClCompile Include="..\libgdsto3d\gds_globals.cpp" />
     <ClCompile Include="..\libgdsto3d\process_cfg.cpp" />
+    <ClCompile Include="..\libgdsto3d\voro++\src\voro++.cc" />
+    <ClCompile Include="..\libgdsto3d\Voronoi3D.cpp" />
     <ClCompile Include="..\math\AA_BOUNDING_BOX.cpp" />
     <ClCompile Include="..\math\FRUSTUM.cpp" />
     <ClCompile Include="..\math\MATRIX4X4.cpp" />
@@ -143,7 +147,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -168,8 +172,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-    <OutDir>./</OutDir>
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -181,6 +187,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -194,10 +201,10 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\libgdsto3d;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>L:\Soft\GDS3D_1.8_optim\GDS3D_1.8\libgdsto3d\voro++\src;..\libgdsto3d\clipper;..\libgdsto3d\voro++\src;..\libgdsto3d;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CallingConvention>StdCall</CallingConvention>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -214,7 +221,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\libgdsto3d;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\libgdsto3d\clipper;..\libgdsto3d;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CallingConvention>StdCall</CallingConvention>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -226,6 +233,7 @@
       <RegisterOutput>false</RegisterOutput>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ProgramDatabaseFile>$(Configuration)\$(TargetName).pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

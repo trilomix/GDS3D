@@ -129,7 +129,7 @@ bool GDSParse::ParseFile(char *topcell)
 {
 	byte recordtype, datatype;
 	char *tempstr;
-	struct ProcessLayer *layer = NULL;
+	//struct ProcessLayer *layer = NULL;
     
     float BgnExtn;
     float EndExtn;
@@ -374,7 +374,7 @@ bool GDSParse::ParseFile(char *topcell)
 				 */
 				if(_CurrentObject && _CurrentObject->GetCurrentText() && _textstring){
 					if(_process != NULL){
-						layer = _process->GetLayer(_currentlayer, _currentdatatype);
+						//layer = _process->GetLayer(_currentlayer, _currentdatatype);
 						//if(layer && layer->Show){
 							_CurrentObject->GetCurrentText()->SetString(_textstring);
 						//}
@@ -1032,7 +1032,7 @@ void GDSParse::ParseXY()
 						_layer_warning[_currentlayer+1][_currentdatatype+1] = true;
 					}
 				}else{
-					if(!_layer_warning[_currentlayer+1][_currentdatatype+1]){
+					if(_process && !_layer_warning[_currentlayer+1][_currentdatatype+1]){
 						_process->AddLayer(_currentlayer, _currentdatatype);
 						_layer_warning[_currentlayer+1][_currentdatatype+1] = true;
 					}

@@ -188,7 +188,7 @@ string StrCalc::toPostfix(char* source)
 			if (find)
 			{
 				postfix += *source;
-				find = false;
+				//find = false;
 			}
 
 		}

@@ -1,8 +1,11 @@
 #include "outputStream.h"
 #include "gdsobject_ogl.h"
 #include <algorithm>
+#include "Voronoi3D.h"
+//#include "../libgdsto3d/clipper/clipper.hpp"
+using namespace ClipperLib;
 
-#ifdef linux
+#if defined(linux) || defined(__APPLE__)
 #include<sstream>
 template <typename T>
 std::string to_string(T value)
@@ -114,6 +117,7 @@ void Output::SaveToGEO(GDSObject_ogl *render_object) {
 		return;
 	
 	cur_GDS = new GDSGroup(render_object);
+	if (wm->assembly) {
 	GDS* gds = wm->Assembly->GetGDS(render_object->GetName());
 	if (gds == NULL) {
 		gds = wm->Assembly->GetGDS();
@@ -121,6 +125,7 @@ void Output::SaveToGEO(GDSObject_ogl *render_object) {
 	}
 	if (gds->MeshMaxElemSize && gds->MeshMaxElemSize < cur_GDS->MeshMaxElemSize)
 		cur_GDS->MeshMaxElemSize = gds->MeshMaxElemSize;
+	}
 	FullGDSItems.push_back(cur_GDS);
 	for (size_t i = 0; i < render_object->PolygonItems.size(); i++) {
 		GDSPolygon *GDSpoly;
@@ -145,6 +150,7 @@ void Output::SaveToGEO(GDSObject_ogl *render_object) {
 						gds = gds->Next;
 					}
 					bool exist = false;
+                    if(gds){
 					for (size_t i = 0; i < FullGDSItems.size(); i++) {
 						if (strcmp(FullGDSItems[i]->Name, gds->Name) == 0) {
 							exist = true;
@@ -160,6 +166,8 @@ void Output::SaveToGEO(GDSObject_ogl *render_object) {
 						FullGDSItems.push_back(cur_GDS);
 					}
 				}
+                    
+				}
 			}
 			else {
 				gds = wm->Assembly->GetGDS();
@@ -172,7 +180,9 @@ void Output::SaveToGEO(GDSObject_ogl *render_object) {
 					}
 					gds = gds->Next;
 				}
+                if(gds){
 				cur_GDS->Name = gds->Name;
+                }
 
 			}
 		}
@@ -201,8 +211,8 @@ void Output::SaveToGEO(GDSObject_ogl *object, bool flat) {
 
 
 	cur_GDS = new GDSGroup(object);
-	if (object->GetGDSName()) {
-		GDS* gds = wm->Assembly->GetGDS(object->GetName());
+	if (object->GetGDSName() && wm->assembly) {
+		GDS* gds = wm->Assembly->GetGDS(object->GetGDSName());
 		if (gds->MeshMaxElemSize>1 && gds->MeshMaxElemSize < cur_GDS->MeshMaxElemSize)
 			cur_GDS->MeshMaxElemSize = gds->MeshMaxElemSize;
 	}
@@ -231,7 +241,10 @@ void Output::Convert_Polygon() {
 		{
 			ProcessLayer *do_layer = cur_GDS->layer_list[j];
 
-			PolygonItems = SimplifyPolyItems(cur_GDS->GDSPolygonItems, do_layer);
+			//PolygonItems = SimplifyPolyItems(cur_GDS->GDSPolygonItems, do_layer);
+			PolygonItems = SimplifyPolyItems_wClipper(cur_GDS->GDSPolygonItems, do_layer);
+			// Second pass for some particular polygon
+			PolygonItems = SimplifyPolyItems_wClipper(PolygonItems, do_layer);
 			for (size_t k = 0; k < PolygonItems.size(); k++) {
 				cur_GDS->FullPolygonItems.push_back(PolygonItems[k]);
 			}
@@ -283,7 +296,22 @@ void Output::LayerList() {
 				// New layer?
 				if (!found)
 				{
+					if ((cur_GDS->layer_list.size() == 0) || cur_GDS->layer_list[cur_GDS->layer_list.size() - 1]->Height < layer->Height) {
 					cur_GDS->layer_list.push_back(layer);
+					} else {
+						vector<ProcessLayer*> LayerList;
+						i = 0;
+						while (cur_GDS->layer_list[i]->Height < layer->Height) {
+							LayerList.push_back(cur_GDS->layer_list[i]);
+							i++;
+						}
+						LayerList.push_back(layer);
+						while (i<cur_GDS->layer_list.size()) {
+							LayerList.push_back(cur_GDS->layer_list[i]);
+							i++;
+						}
+						cur_GDS->layer_list = LayerList;
+					}
 					if (cur_GDS->Unit == 0)
 						cur_GDS->Unit = layer->Units->Unitu;
 				}
@@ -293,8 +321,8 @@ void Output::LayerList() {
 
 }
 
-bool Output::CheckMeshSize(GeoPolygon *poly, vector<GeoPolygon*> PolyItemsNear, double TopDownMaxRatio, bool Top) {
-	bool Modif = false;
+size_t Output::CheckMeshSize(GeoPolygon *poly, vector<GeoPolygon*> PolyItemsNear, double TopDownMaxRatio, bool Top) {
+	size_t Modif = 0;
 	vector<GeoPolygon*> PolyItems;
 	
 	double TopDownMaxRatio_local= TopDownMaxRatio;
@@ -302,22 +330,17 @@ bool Output::CheckMeshSize(GeoPolygon *poly, vector<GeoPolygon*> PolyItemsNear, 
 	PolyItems = GetContactPolyItems(poly, PolyItemsNear, Top);
 	for (size_t k = 0; k < PolyItems.size(); k++) {
 		GeoPolygon *poly_contact = PolyItems[k];
-		if (poly->GDSPolygon::isPolygonInside_wborders(*poly_contact)  && poly->GetLayer()->Metal 
-			|| poly_contact->GDSPolygon::isPolygonInside_wborders(*poly) && !poly->GetLayer()->Metal
+		if ((poly->GetLayer()->Metal && poly->GDSPolygon::isPolygonInside_wborders(*poly_contact)  )
+			|| (!poly->GetLayer()->Metal && poly_contact->GDSPolygon::isPolygonInside_wborders(*poly) )
 			) {
 			if (poly_contact->GetMeshElemSize() < poly->GetMeshElemSize() / TopDownMaxRatio_local
 				|| poly_contact->GetMeshElemSizeMin() < poly->GetMeshElemSizeMin()
 				|| poly->DistBB2BBLessThan(poly_contact, TopDownMaxRatio)) {
-				if (poly->SetMeshElemSize(poly_contact, Top, TopDownMaxRatio) && !Modif)
-					Modif = true;
+				Modif += poly->SetMeshElemSize(poly_contact, Top, TopDownMaxRatio) ;
 			}
 			if (poly->GetMeshElemSize() < poly_contact->GetMeshElemSize() / TopDownMaxRatio_local) {
-				if (poly_contact->GetBBox()->max == Point2D(1160.375, 1433.805)) {
-					assert(k == k);
-				}
 
-				if (poly_contact->SetMeshElemSize(poly, !Top, TopDownMaxRatio) && !Modif)
-					Modif = true;
+				Modif += poly_contact->SetMeshElemSize(poly, !Top, TopDownMaxRatio) ;
 			}
 		}
 		else {
@@ -325,12 +348,10 @@ bool Output::CheckMeshSize(GeoPolygon *poly, vector<GeoPolygon*> PolyItemsNear, 
 				GeoPolygon *hole = poly_contact->GetHoles()[i];
 				if (poly->GDSPolygon::isPolygonInside_wborders(*hole)) {
 					if (hole->GetMeshElemSize() < poly->GetMeshElemSize() / TopDownMaxRatio_local) {
-						if (poly->SetMeshElemSize(hole, Top, TopDownMaxRatio) && !Modif)
-							Modif = true;
+						Modif += poly->SetMeshElemSize(hole, Top, TopDownMaxRatio) ;
 					}
 					if (poly->GetMeshElemSize() < hole->GetMeshElemSize() / TopDownMaxRatio_local) {
-						if (hole->SetMeshElemSize(poly, !Top, TopDownMaxRatio) && !Modif)
-							Modif = true;
+						Modif += hole->SetMeshElemSize(poly, !Top, TopDownMaxRatio) ;
 					}
 
 				}
@@ -340,8 +361,11 @@ bool Output::CheckMeshSize(GeoPolygon *poly, vector<GeoPolygon*> PolyItemsNear, 
 	return Modif;
 
 }
+void Output::SetMeshElemSize(GeoPolygon *poly, size_t *Modif, size_t *TotDone, size_t TotalNbPoly) {
+	SetMeshElemSize(poly, Modif, TotDone, TotalNbPoly, true);
+}
 
-void Output::SetMeshElemSize(GeoPolygon *poly, bool *Modif) {
+void Output::SetMeshElemSize(GeoPolygon *poly, size_t *Modif, size_t *TotDone, size_t TotalNbPoly, bool Countpoly) {
 	
 	
 	double currentMesh = poly->GetMeshElemSize(Modif);
@@ -349,38 +373,121 @@ void Output::SetMeshElemSize(GeoPolygon *poly, bool *Modif) {
 	if (poly->GetThickness() > 1) {
 		TopDownMaxRatio = TopDownMaxRatio * pow(10, floor(log10(poly->GetThickness())))*floor(poly->GetThickness() / pow(10, floor(log10(poly->GetThickness()))));
 	}
-
+	/*
 	vector<GeoPolygon*> PolyItemsNear = cur_GDS->FullSortPolygonItems.GetPolyNear(*poly->Get3DBBox());
+	vector<size_t> DoNotCheckListIndex;
+	vector<GeoPolygon*> DoCheckList;
 	
+	// Remove unrevalant polygon
+	if (poly->IsHole() || poly->GetHoles().size() > 0) {
 	for (size_t i = 0; i < PolyItemsNear.size(); i++) {
 		GeoPolygon* cur_poly = PolyItemsNear[i];
 		if (cur_poly == poly)
 			continue;
-		if(cur_poly->GetPoints() == 4 && cur_poly->GetBBox()->max == Point2D(1156.775,1430.35)	
-			){
-			assert(i == i);
+			if (poly->IsHole()) {
+				if (cur_poly->GetLayer() == poly->GetLayer()) {
+					if (!(cur_poly->hasPoly(poly) || poly->hasPoly(cur_poly))) {
+						DoNotCheckListIndex.push_back(i);
+					}
+				}
+			}
+			else {
+				if (poly->isInHole(cur_poly)) {
+					DoNotCheckListIndex.push_back(i);
+				}
+
+			}
 		}
-		if (cur_poly->GetLayer() == poly->GetLayer() && cur_poly->GetMeshElemSize()/TopDownMaxRatio < poly->GetMeshElemSize()) {
-			if(poly->MinDistFromPoly(cur_poly, TopDownMaxRatio) && !Modif)
-				*Modif = true;
+
+		if (DoNotCheckListIndex.size() > 0) {
+			size_t j = 0;
+			for (size_t i = 0; i < PolyItemsNear.size(); i++) {
+				GeoPolygon* cur_poly = PolyItemsNear[i];
+				if (j < DoNotCheckListIndex.size() && DoNotCheckListIndex[j] == i) {
+					j += 1;
+				}
+				else {
+					DoCheckList.push_back(cur_poly);
+				}
+			}
+			PolyItemsNear = DoCheckList;
 		}
 	}
+	*/
+	size_t localModif = *Modif;
+	for (size_t i = 0; i < poly->GetHoles().size(); i++) {
+		GeoPolygon* cur_poly = poly->GetHoles()[i];
+		SetMeshElemSize(cur_poly, Modif, TotDone, TotalNbPoly, Countpoly);
+	}
+	while (localModif != *Modif) {
+		localModif = *Modif;
+		for (size_t i = 0; i < poly->GetHoles().size(); i++) {
+			GeoPolygon* cur_poly = poly->GetHoles()[i];
+			SetMeshElemSize(cur_poly, Modif, TotDone, TotalNbPoly, false);
+				
+			// Check timer?
+			if (wm->timer(time, 0) > Waittime) {
+				v_printf(0, "\r                                               \r");
+				if (*Modif > 0) {
+					v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) Modif:%zd", 1.0*(*TotDone) / TotalNbPoly*100.0, *TotDone, TotalNbPoly, *Modif);
+					if(Countpoly){
+						v_printf(0, " inner(%zd/%zd)", i, poly->GetHoles().size() - 1);
+						if (localModif != *Modif) {
+							v_printf(0, " Modif:%zd", *Modif - localModif);
+						}
+					}
+				}
+				else {
+					v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd)", 1.0*(*TotDone) / TotalNbPoly*100.0, *TotDone, TotalNbPoly);
+				}
+				fflush(stdout);
+				wm->timer(time, 1);
+			}
+		}
+		}
+	*Modif +=  poly->SetPointsMeshElemSize(TopDownMaxRatio);
+	/*
+	for (size_t i = 0; i < PolyItemsNear.size(); i++) {
+		
+		GeoPolygon* cur_poly = PolyItemsNear[i];
+		
+		if (cur_poly == poly)
+			continue;
 
-	if(CheckMeshSize(poly, PolyItemsNear, TopDownMaxRatio, false /*Bottom*/) && !Modif)
-		*Modif = true;
-	if (CheckMeshSize(poly, PolyItemsNear, TopDownMaxRatio, true /*Top*/) && !Modif)
-		*Modif = true;
+		if (cur_poly->GetLayer() == poly->GetLayer() && cur_poly->GetMeshElemSize()/TopDownMaxRatio < poly->GetMeshElemSize()) {
+			*Modif += poly->MinDistFromPoly(cur_poly, TopDownMaxRatio);
+		}
+	}
+	*/
+	//*Modif += CheckMeshSize(poly, PolyItemsNear, TopDownMaxRatio, false /*Bottom*/) ;
+	//*Modif += CheckMeshSize(poly, PolyItemsNear, TopDownMaxRatio, true /*Top*/) ;
 
-	if (currentMesh != poly->GetMeshElemSize() && !*Modif)
-		*Modif = true;
+	if (currentMesh != poly->GetMeshElemSize() && *Modif==0)
+		*Modif = 1;
+
+	// Check timer?
+	if (wm->timer(time, 0) > Waittime*(1+(19*!Countpoly))) {
+		v_printf(0, "\r                                               \r");
+		if (*Modif > 0) {
+			v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) Modif:%zd", 1.0*(*TotDone) / TotalNbPoly*100.0, *TotDone, TotalNbPoly, *Modif);
+		}
+		else {
+			v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd)", 1.0*(*TotDone) / TotalNbPoly*100.0, *TotDone, TotalNbPoly);
+		}
+		fflush(stdout);
+		wm->timer(time, 1);
+	}
+	if (Countpoly) {
+			*TotDone += 1;
+	}
 }
 
 void Output::Traverse(GDSObject *object, GDSMat object_mat) {
 	GDSPolygon *GDSpoly;
 
-	if (cur_GDS->Name != object->GetGDSName() || cur_GDS->Name != NULL && object->GetGDSName() != NULL 
+    if (cur_GDS->Name != object->GetGDSName() || (cur_GDS->Name != NULL && object->GetGDSName() != NULL 
 		&& strlen(cur_GDS->Name) == strlen(object->GetGDSName())
-		&& strcmp(cur_GDS->Name, object->GetGDSName()) != 0 ) {
+                                                  && strcmp(cur_GDS->Name, object->GetGDSName()) != 0) ) {
 		cur_GDS = new GDSGroup(object, object_mat);
 		GDS* gds = wm->Assembly->GetGDS(object->GetName());
 		if (gds->MeshMaxElemSize>1 && gds->MeshMaxElemSize < cur_GDS->MeshMaxElemSize)
@@ -391,14 +498,38 @@ void Output::Traverse(GDSObject *object, GDSMat object_mat) {
 
 	// Add Polygon of the current CellView
 	for (size_t i = 0; i < object->PolygonItems.size(); i++) {
-		GDSpoly = new GDSPolygon(*object->PolygonItems[i]);
+		
+		GDSPolygon *curpoly = object->PolygonItems[i];
+		if (curpoly->GetLayer()->Show) {
+			GDSpoly = new GDSPolygon(*curpoly);
 		GDSpoly->transformPoints(object_mat);
+			GDSpoly->Orientate();
 		cur_GDS->GDSPolygonItems.push_back(GDSpoly);
+	}
 	}
 	// Add Polgon of the refs CellView
 	for (size_t i = 0; i < object->refs.size(); i++) {
 		Traverse(object->refs[i]->object, object_mat * object->refs[i]->mat);
 	}
+}
+
+vector<GeoPolygon *> Output::TraverseGeoLayer(GeoPolygon *poly) {
+	// All poly with the leaf in head
+	vector<GeoPolygon *> PolyList;
+	for (size_t i=0; i < poly->GetHoles().size();i++) {
+		GeoPolygon *polyhole = poly->GetHoles()[i];
+		vector<GeoPolygon *> PolyHoleList = TraverseGeoLayer(polyhole);
+		for (size_t j=0; j < PolyHoleList.size()-1; j++) { 
+			// Add all poly exept polyhole
+			PolyList.push_back(PolyHoleList[j]);
+		}
+	}
+	for (size_t i=0; i < poly->GetHoles().size(); i++) {
+		GeoPolygon *polyhole = poly->GetHoles()[i];
+		PolyList.push_back(polyhole);
+	}
+	PolyList.push_back(poly);
+	return PolyList;
 }
 
 void Output::Geometry() {
@@ -417,18 +548,14 @@ void Output::Geometry() {
 			GeoPolygon *Outline = new GeoPolygon(cur_GDS->Name, do_layer->Height * cur_GDS->Unit, do_layer->Thickness* cur_GDS->Unit, do_layer, true /*isHole*/);
 			double EdgeOffset = 1.0;
 			double sign = 1.0;
-			for (size_t i = 0; i < 4; i++) {
-				if (i == 0)
+			
 					Outline->AddPoint(cur_GDS->bbox.min - Point2D(EdgeOffset, sign*EdgeOffset));
-				if (i == 1)
 					Outline->AddPoint(cur_GDS->bbox.min.X - EdgeOffset, cur_GDS->bbox.max.Y + sign*EdgeOffset);
-				if (i == 2)
 					Outline->AddPoint(cur_GDS->bbox.max + Point2D(EdgeOffset, sign*EdgeOffset));
-				if (i == 3)
 					Outline->AddPoint(cur_GDS->bbox.max.X + EdgeOffset, cur_GDS->bbox.min.Y - sign*EdgeOffset);
 
-			}
 			Outline->Orientate();
+			Outline->SetIsHole(true);
 			Outline->Tesselate();
 			Outline->SetMeshElemSize();
 			cur_GDS->OutLinesItems.push_back(Outline);
@@ -439,36 +566,42 @@ void Output::Geometry() {
 			} // PolyLoop
 
 		}// Layers Loop
-		TotalNbPoly += cur_GDS->FullPolygonItems.size();
+		TotalNbPoly += cur_GDS->FullPolygonItems.size()+ cur_GDS->OutLinesItems.size(); 
 	}// GDS Loop
 
+	clip voro;
+	voro.execute(FullGDSItems);
 
 	// Set Mesh Elem Size
 	size_t PassCnt = 0;
-	bool Modif = true;
+	size_t Modif = 1;
 	wm->timer(time, 1);
 
-	while (Modif) {
+	while (Modif>0) {
 		PassCnt += 1;
 		size_t TotDone = 0;
-		v_printf(1, "Set Mesh Elem Size Pass %zd\n", PassCnt);
-		Modif = false;
+		v_printf(1, "Set Mesh Elem Size Pass %zd", PassCnt);
+		if(PassCnt > 1) v_printf(1, " (Prev Modif:%zd)", Modif);
+		v_printf(1, "\n");
+		Modif = 0;
 		for (size_t k = 0; k < FullGDSItems.size(); k++) {
 			cur_GDS = FullGDSItems[k];
+			/*
 			// First Pass with no hole poly
 			for (size_t i = 0; i < cur_GDS->FullPolygonItems.size(); i++)
 			{
 				GeoPolygon *poly = cur_GDS->FullPolygonItems[i];
 				if (poly->GetHoles().size() == 0) {
-					if (poly->GetBBox()->max==Point2D(851.355, 1541.57)) {
-						assert(i == i);
-					}
 					SetMeshElemSize(poly, &Modif);
 					TotDone += 1;
 				}
 				// Check timer?
 				if (wm->timer(time, 0) > Waittime) {
+					if (Modif > 0) { 
+						v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) Modif:%zd", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly, Modif); 
+					} else { 
 					v_printf(0,"\rTotal Done %5.2f%% (%zd/%zd)", 1.0*(TotDone)/TotalNbPoly*100.0, TotDone, TotalNbPoly);
+					}
 					fflush(stdout);
 					wm->timer(time, 1);
 				}
@@ -480,22 +613,17 @@ void Output::Geometry() {
 				
 				if (poly->GetHoles().size() != 0) {
 
-					if (Point2D(900, 1400) < poly->GetBBox()->max && poly->GetBBox()->max < Point2D(1000, 1450)) {
-						assert(i == i);
-					}
-					if (poly->GetBBox()->max == Point2D(1157.49, 1430.92)) {
-						assert(i == i);
-					}
 					for (size_t j = 0; j < poly->GetHoles().size(); j++) {
 						GeoPolygon *hole = poly->GetHoles()[j];
-						if (hole->GetBBox()->max == Point2D(1157.49, 1430.92)) {
-							assert(i == i);
-						}
-
 						SetMeshElemSize(hole, &Modif);
 						// Check timer?
 						if (wm->timer(time, 0) > Waittime) {
+							if (Modif > 0) {
+								v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) Modif:%zd", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly, Modif);
+							}
+							else {
 							v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) inside (%zd/%zd)", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly, j, poly->GetHoles().size()-1);
+							}
 							fflush(stdout);
 							wm->timer(time, 1);
 						}
@@ -507,16 +635,63 @@ void Output::Geometry() {
 				// Check timer?
 				if (wm->timer(time, 0) > Waittime) {
 					v_printf(0, "\r                                               \r");
+					if (Modif > 0) {
+						v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) Modif:%zd", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly, Modif);
+					}
+					else {
 					v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd)", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly);
+					}
 					fflush(stdout);
 					wm->timer(time, 1);
 				}
 
 			}
+			*/
 			for (size_t i = 0; i < cur_GDS->OutLinesItems.size(); i++)
 			{
 				GeoPolygon *poly = cur_GDS->OutLinesItems[i];
+				double Cur_Modif = Modif;
+				SetMeshElemSize(poly, &Modif, &TotDone, TotalNbPoly);
+				while (Cur_Modif != Modif) {
+					Cur_Modif = Modif;
+					if(i>0){
+						SetMeshElemSize(cur_GDS->OutLinesItems[i-1], &Modif, &TotDone, TotalNbPoly, false);
+					}
+					SetMeshElemSize(poly, &Modif, &TotDone, TotalNbPoly, false);
+					
+					// Check timer?
+					if (wm->timer(time, 0) > Waittime) {
+						v_printf(0, "\r                                               \r");
+						if (Modif > 0) {
+							v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) Modif:%zd", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly, Modif);
+						}
+						else {
+							v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd)", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly);
+						}
+						fflush(stdout);
+						wm->timer(time, 1);
+					}
+
+				}
+				
+				/*vector<GeoPolygon *> PolyList = TraverseGeoLayer(poly);
+				for (size_t j = 0; j < PolyList.size(); j++) {
+					GeoPolygon* curPoly = PolyList[j];
 				SetMeshElemSize(poly, &Modif);
+					TotDone += 1;
+					// Check timer?
+					if (wm->timer(time, 0) > Waittime) {
+						if (Modif > 0) {
+							v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) Modif:%zd", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly, Modif);
+						}
+						else {
+							v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd)", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly);
+						}
+						fflush(stdout);
+						wm->timer(time, 1);
+					}
+
+				}*/
 				// Find Upper Layer
 				for (size_t j = 0; j < cur_GDS->OutLinesItems.size(); j++) {
 					if (i == j)
@@ -536,6 +711,20 @@ void Output::Geometry() {
 						}
 					}
 				}
+				// Check timer?
+				if (wm->timer(time, 0) > Waittime) {
+					//v_printf(0, "\33[2K\r"); // Clear line
+					v_printf(0, "\r                                               \r");
+					if (Modif > 0) {
+						v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) Modif:%zd", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly, Modif);
+					}
+					else {
+						v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd)", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly);
+					}
+					fflush(stdout);
+					wm->timer(time, 1);
+				}
+
 			}
 		}
 		v_printf(0, "\r                                               \r");
@@ -555,11 +744,15 @@ void Output::Geometry() {
 	string GDS_cl;
 	for (size_t i = 0; i < FullGDSItems.size(); i++) {
 		cur_GDS = FullGDSItems[i];
-		if (cur_GDS->Unit != 0)
-			if(Unit == 0)
+        if (cur_GDS->Unit != 0){
+            if(Unit == 0){
 				Unit = cur_GDS->Unit;
-			else if (cur_GDS->Unit < Unit)
+            } else {
+                if (cur_GDS->Unit < Unit){
 				Unit = cur_GDS->Unit;
+                }
+            }
+        }
 		if (cur_GDS->Name) {
 			string Name = cur_GDS->Name;
 			std::replace(Name.begin(), Name.end(), '-', '_');
@@ -794,8 +987,10 @@ void Output::Geometry() {
 				}
 			}
 		}
+        if(Temppoly){
 		EndGeo += "\nPhysical Surface(\"HEATLAYER\", " + to_string(cur_Physical_Index) + ") = { " + Temppoly->GetTopSurfaceID() + " };\n";
 		cur_Physical_Index += 1;
+	}
 	}
 
 
@@ -858,15 +1053,17 @@ void Output::Geometry() {
 				}
 			}
 		}
+        if(Temppoly){
 		// Put the biggest first
 		if (Top_Value == Farest_Value)
 			FixTempSurface.insert(FixTempSurface.begin(), Temppoly->GetTopSurfaceID());
 		else
 			FixTempSurface.insert(FixTempSurface.begin(), Temppoly->GetSurfaceID());
 	}
-	fprintf(file, Surface_Geo.c_str());
-	fprintf(file, Volume_Geo.c_str());
-	fprintf(file, EndGeo.c_str());
+	}
+	fprintf(file, "%s", Surface_Geo.c_str());
+	fprintf(file, "%s", Volume_Geo.c_str());
+	fprintf(file, "%s", EndGeo.c_str());
 	
 	if (HeatLayerHigh) {
 		for (size_t i = 0; i < FixTempSurface.size(); i++) {
@@ -1005,7 +1202,7 @@ void Output::Simu_GetDP() {
 		}
 	}
 	
-	fprintf(file, Output_Pro.c_str());
+	fprintf(file, "%s", Output_Pro.c_str());
 	
 	// HEATLAYER
 	ProcessLayer *HeatLayerHigh = NULL;
@@ -1071,6 +1268,7 @@ void Output::Simu_GetDP() {
 				}
 			}
 		}
+        if(Temppoly != NULL)
 		HeatSurfaceArea += Temppoly->Area()*pow((cur_GDS->Unit*1e-3), 2);
 
 	}
@@ -1092,7 +1290,7 @@ void Output::Simu_GetDP() {
 	fprintf(file, "				Name \"Parameters / 1Simulation time\" }\n");
 	fprintf(file, "			dtime = { 0.05, Min 0.001, Max 1, Step 0.001,\n");
 	fprintf(file, "				Name \"Parameters / 1Time step\" }");
-	fprintf(file, Pro_Function_Const.c_str());
+	fprintf(file, "%s", Pro_Function_Const.c_str());
 	fprintf(file, "\n\t\t\t];\n");
 	fprintf(file, "\t// Material\n");
 	fprintf(file, "\tkCu			= 394;		// [W*/(m*K)]\n");
@@ -1123,7 +1321,7 @@ void Output::Simu_GetDP() {
 	fprintf(file, "\tcSi		= 0.705;		// [J/g*K]\n");
 	fprintf(file, "\tcAir		= 1.006;		// [J/g*K]\n");
 	fprintf(file, "\t\n");
-	fprintf(file, Pro_Function.c_str());
+	fprintf(file, "%s", Pro_Function.c_str());
 	fprintf(file, "\n");
 	fprintf(file, "	TimeFct[] = ($Time < pulse) ? 1 : 0;\n");
 	fprintf(file, "\n");
@@ -1198,7 +1396,7 @@ void Output::HeatLayer_PostProcess(GeoPolygon* polygon, GDSGroup* cur_GDS) {
 		}
 
 		// find Bulk Polygon
-		GeoPolygon *poly_bulk;
+		GeoPolygon *poly_bulk=NULL;
 		for (size_t j = 0; j < cur_GDS->FullPolygonItems.size(); j++) {
 			poly_bulk = cur_GDS->FullPolygonItems[j];
 			if (poly_bulk->GetLayer() == layer) {
@@ -1206,7 +1404,8 @@ void Output::HeatLayer_PostProcess(GeoPolygon* polygon, GDSGroup* cur_GDS) {
 				break;
 			}
 		}
-		
+		if(poly_bulk == NULL)
+            continue;
 		if (polygon->GetLayer()->Height == layer->Height) {
 		// Bottom Connect
 
@@ -1323,14 +1522,14 @@ void Output::Recombine(GeoPolygon* Polygon_Dielec, ProcessLayer *layer) {
 
 void Output::PolygonPoints(GeoPolygon * polygon, bool dielectrique, double MeshElemSize){
 	ProcessLayer *layer = polygon->GetLayer();
-	double z0 = floor(rounded(polygon->GetHeight()/ cur_GDS->Unit))* cur_GDS->Unit;
+	//double z0 = floor(rounded(polygon->GetHeight()/ cur_GDS->Unit))* cur_GDS->Unit;
 	GeoPolygon* cur_Hole;
 	
 	if (polygon->IsWriten())
 		return;
 	
 	vector<GeoPolygon*> PolyItems;
-	GeoPolygon* poly_BottomMesh = new GeoPolygon(cur_GDS->Name, polygon, polygon->IsHole());
+	//GeoPolygon* poly_BottomMesh = new GeoPolygon(cur_GDS->Name, polygon, polygon->IsHole());
 	//poly_BottomMesh->SetMeshElemSize(polygon->GetMeshElemSize());
 	//PolyItems = GetContactPolyItems(polygon, cur_GDS->FullPolygonItems, false /*Bottom*/);
 	PolyItems = GetContactPolyItems(polygon, cur_GDS->FullSortPolygonItems.GetPolyNear(*polygon->Get3DBBox()), false /*Bottom*/);
@@ -1354,7 +1553,7 @@ void Output::PolygonPoints(GeoPolygon * polygon, bool dielectrique, double MeshE
 
 	//Points (n)
 	polygon->SetPoint_Index(cur_Point_Index);
-	fprintf(file, polygon->GetBottomGeo(cur_Line_Index).c_str());
+	fprintf(file, "%s", polygon->GetBottomGeo(cur_Line_Index).c_str());
 	/*
 	//Field
 	fprintf(file, "AttField = %zd;\n", cur_Field_Index);
@@ -1646,11 +1845,12 @@ void Output::ConnectPoly(GeoPolygon *polygon, bool Top) {
 		}
 		if (polygon->GetHoles().size() > 0) {
 			string tmpStr = polygon->GetHolesLoopLinesList(Top, PolyholesItems);
-			if (tmpStr != "")
+            if (tmpStr != ""){
 				if (Surface_LineLoops == "")
 					Surface_LineLoops = tmpStr;
 				else
 					Surface_LineLoops = Surface_LineLoops + ", " + tmpStr;
+		}
 		}
 
 		// Add surface contact
@@ -1695,7 +1895,7 @@ void Output::ConnectPoly(GeoPolygon *polygon, bool Top) {
 			}
 			vector<GeoPolygon*> PolyList;
 			GeoPolygon* cur_Hole;
-			GeoPolygon* cur_Hole_poly;
+			//GeoPolygon* cur_Hole_poly;
 			if (poly_contact->GetHoles().size() > 0) {
 
 				for (size_t l = 0; l < poly_contact->GetHoles().size(); l++) {
@@ -1940,6 +2140,243 @@ void Output::ConnectPoly(GeoPolygon *polygon, bool Top) {
 	}
 }
 
+vector<GeoPolygon*>  Output::SimplifyPolyItems_wClipper(vector<GDSPolygon*> PolygonItems, ProcessLayer *Layer) {
+	GDSPolygon *poly;
+	// Reset Timer
+	wm->timer(time, 1);
+
+	vector<GDSPolygon*> PolygonOnLayer;
+
+	//bool MergeDone = false;
+
+	vector<GeoPolygon*> PolygonItemsOutVec;
+
+	for (size_t i = 0; i < PolygonItems.size(); i++)
+	{
+		poly = PolygonItems[i];
+		// Exclude for different layer
+		if (poly->GetLayer() != Layer)
+			if (strcmp(poly->GetLayer()->ProcessName, Layer->ProcessName) != 0 || poly->GetLayer()->Height != Layer->Height || poly->GetLayer()->Thickness != Layer->Thickness)
+				// if same process and same high and same thickness then consider  as same layer
+				continue;
+		PolygonOnLayer.push_back(poly);
+	}
+
+	
+	PolyTree res;
+	Paths AllPoly;
+	AllPoly.resize(PolygonOnLayer.size());
+
+	for (size_t i = 0; i < PolygonOnLayer.size(); i++) {
+
+		Path p;
+		
+		poly = PolygonOnLayer[i];
+		poly->Orientate();
+		p.resize(poly->GetPoints());
+		for (size_t j = 0; j < poly->GetPoints(); j++) {
+			p[j].X = rounded(poly->GetXCoords(j) / poly->GetLayer()->Units->Unitu);
+			p[j].Y = rounded(poly->GetYCoords(j) / poly->GetLayer()->Units->Unitu);
+		}
+
+		AllPoly[i] = p;
+
+		/*
+		if (i == 0) {
+			c.AddPath(p, ptClip, true);
+		}
+		else {
+			c.AddPath(p, ptSubject, true);
+		}
+		*/
+	}
+	if (PolygonOnLayer.size() > 1000 && !Layer->Metal && Layer->MinSpace > 0) {
+		ClipperOffset co;
+		v_printf(0, "\rLayer %s merge (%zd)", Layer->Name, PolygonOnLayer.size());
+		fflush(stdout);
+		// Join Via
+		co.AddPaths(AllPoly, jtMiter, etClosedPolygon);
+		co.Execute(AllPoly, Layer->MinSpace/2.0 + 1);
+		co.Clear();
+		// Check timer?
+		if (wm->timer(time, 0) > Waittime) {
+			v_printf(0, "\r                                      ", Layer->Name);
+			v_printf(0, "\rLayer %s merge half Done", Layer->Name);
+			fflush(stdout);
+			wm->timer(time, 1);
+		}
+		// Shrink back
+		co.AddPaths(AllPoly, jtMiter, etClosedPolygon);
+		Paths AllPolybis;
+		co.Execute(AllPolybis, -(Layer->MinSpace/2.0 +1));
+		co.Clear();
+		// Resize surface
+		// find Unit size
+		ClipperLib::cInt UnitSize = 0;
+		Path polypath = AllPolybis[0];
+		ClipperLib::cInt Edgelength = abs(polypath[0].X - polypath[1].X);
+		if (Edgelength < Layer->MinSpace) {
+			UnitSize = Edgelength;
+		}
+		else {
+			unsigned long n = 2;
+			while (UnitSize < 0) {
+				UnitSize = (Edgelength - Layer->MinSpace*(n - 1)) / n;
+			}
+		}
+		// shrink surface
+		for (Paths::size_type i = 0; i < AllPolybis.size(); ++i) {
+			Path polypath = AllPolybis[i];
+			ClipperLib::cInt C = sqrt((polypath[0].X - polypath[1].X) ^ 2 + (polypath[0].Y - polypath[1].Y) ^ 2);
+		}
+		/*for (Paths::iterator polypath_it = AllPolybis.begin(); polypath_it != AllPolybis.end(); polypath_it++) {
+			Path &polypath = polypath_it->data;
+			//ClipperLib::cInt C = sqrt((polypath[0]->X - polypath[1]->X) ^ 2 + (polypath[0]->Y - polypath[1]->Y) ^ 2);
+			//if(C= UnitSize){}
+		}*/
+		v_printf(0, "\r                                      ", Layer->Name);
+		v_printf(0, "\rLayer %s merge Done", Layer->Name);
+		// Join Via
+		co.AddPaths(AllPolybis, jtMiter, etClosedPolygon);
+		co.Execute(AllPolybis, (Layer->MinSpace+30.0) / 2.0 + 1);
+		co.Clear();
+		// Shrink back
+		co.AddPaths(AllPolybis, jtMiter, etClosedPolygon);
+		co.Execute(res, -((Layer->MinSpace+30.0) / 2.0 + 1));
+		co.Clear();
+		
+	}
+	else {
+		/*
+		Clipper c;
+		c.AddPaths(AllPoly, ptSubject, true);
+		c.Execute(ctUnion, res, pftPositive, pftPositive);
+		c.Clear();
+		*/
+		ClipperOffset co;
+		// Join 
+		co.AddPaths(AllPoly, jtMiter, etClosedPolygon);
+		co.Execute(AllPoly, 1);
+		co.Clear();
+		// Shrink back
+		co.AddPaths(AllPoly, jtMiter, etClosedPolygon);
+		co.Execute(res, -1);
+		co.Clear();
+	}
+	//pftEvenOdd, pftNonZero, pftPositive, pftNegative
+	PolygonItemsOutVec = Convert_ClipperPolyTree(&res, Layer);
+	res.Clear();
+	
+	
+
+	return PolygonItemsOutVec;
+}
+vector<GeoPolygon*>  Output::SimplifyPolyItems_wClipper(vector<GeoPolygon*> PolygonItems, ProcessLayer *Layer) {
+	GeoPolygon *poly;
+
+	vector<GeoPolygon*> PolygonOnLayer;
+
+	//bool MergeDone = false;
+
+	vector<GeoPolygon*> PolygonItemsOutVec;
+
+	for (size_t i = 0; i < PolygonItems.size(); i++)
+	{
+		poly = PolygonItems[i];
+		// Exclude for different layer
+		if (poly->GetLayer() != Layer)
+			if (strcmp(poly->GetLayer()->ProcessName, Layer->ProcessName) != 0 || poly->GetLayer()->Height != Layer->Height || poly->GetLayer()->Thickness != Layer->Thickness)
+				// if same process and same high and same thickness then consider  as same layer
+				continue;
+		PolygonOnLayer.push_back(poly);
+	}
+
+	Clipper c;
+	PolyTree res;
+
+	for (size_t i = 0; i < PolygonOnLayer.size(); i++) {
+
+		Path p;
+
+		poly = PolygonOnLayer[i];
+
+		p.resize(poly->GetPoints());
+		for (size_t j = 0; j < poly->GetPoints(); j++) {
+			p[j].X = rounded(poly->GetXCoords(j) / poly->GetLayer()->Units->Unitu);
+			p[j].Y = rounded(poly->GetYCoords(j) / poly->GetLayer()->Units->Unitu);
+		}
+
+		if (i == 0) {
+			c.AddPath(p, ptClip, true);
+		}
+		else {
+			c.AddPath(p, ptSubject, true);
+		}
+		// Add Holes
+		for (size_t j = 0; j < poly->GetHoles().size(); j++) {
+			GeoPolygon *hole = poly->GetHoles()[j];
+			Path hole_path;
+			hole_path.resize(hole->GetPoints());
+			for (size_t k = 0; k < hole->GetPoints(); k++) {
+				hole_path[k].X = rounded(hole->GetXCoords(hole->GetPoints()-k-1) / hole->GetLayer()->Units->Unitu);
+				hole_path[k].Y = rounded(hole->GetYCoords(hole->GetPoints() - k - 1) / hole->GetLayer()->Units->Unitu);
+			}
+			if (i == 0) {
+				c.AddPath(hole_path, ptClip, true);
+			}
+			else {
+				c.AddPath(hole_path, ptSubject, true);
+			}
+		}
+	}
+
+	c.Execute(ctUnion, res, pftPositive, pftPositive);
+	//pftEvenOdd, pftNonZero, pftPositive, pftNegative
+	PolygonItemsOutVec = Convert_ClipperPolyTree(&res, Layer);
+	res.Clear();
+	c.Clear();
+
+
+	return PolygonItemsOutVec;
+}
+
+vector<GeoPolygon*> Output::Convert_ClipperPolyTree(PolyTree *pTree, ProcessLayer *Layer) {
+	vector<GeoPolygon*> PolygonItemsOutVec;
+	PolyNode* polynode = pTree->GetFirst();
+	while (polynode)
+	{
+		GeoPolygon* GEO_poly = Convert_ClipperPolyNode(*polynode, Layer);
+		PolygonItemsOutVec.push_back(GEO_poly);
+
+		vector<GeoPolygon*>ChildVec = GEO_poly->GetAllChildren(true /*without holes*/);
+		for (size_t i = 0; i < ChildVec.size(); i++) {
+			PolygonItemsOutVec.push_back(ChildVec[i]);
+		}
+		PolyNode*CurParent = polynode->Parent;
+		polynode = polynode->GetNext();
+		while (polynode && CurParent != polynode->Parent)
+			polynode = polynode->GetNext();
+	}
+	return PolygonItemsOutVec;
+}
+
+GeoPolygon* Output::Convert_ClipperPolyNode(const PolyNode pNode, ProcessLayer *Layer) {
+	GeoPolygon* GEO_poly;
+	vector<Point2D> polycontour;
+	for (size_t i = 0; i < pNode.Contour.size(); i++) {
+		Point2D P;
+		P.X = pNode.Contour[i].X * Layer->Units->Unitu;
+		P.Y = pNode.Contour[i].Y * Layer->Units->Unitu;
+		polycontour.push_back(P);
+	}
+	GEO_poly = new GeoPolygon(cur_GDS->Name, polycontour, pNode.IsHole(), Layer);
+	
+	for (size_t i = 0; i < pNode.ChildCount(); i++) {
+		GEO_poly->AddHole(Convert_ClipperPolyNode(*pNode.Childs[i], Layer));
+	}
+	return GEO_poly;
+}
+
 vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems, ProcessLayer *Layer) {
 	GDSPolygon *poly;
 	GDSPolygon *biggest_poly;
@@ -1949,6 +2386,8 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems,
 	set<GDSPolygon*> PolygonItemsOutSet;
 	vector<GDSPolygon*> PolygonOnLayer;
 	
+	//bool MergeDone = false;
+
 	GeoPolygon *GEO_poly;
 	GeoPolygon *GEO_poly_it;
 	vector<GeoPolygon*> PolygonItemsOutVec;
@@ -1967,6 +2406,31 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems,
 		PolygonOnLayer.push_back(poly);
 	}
 
+	Clipper c;
+	PolyTree res;
+
+	for (size_t i = 0; i < PolygonOnLayer.size(); i++) {
+		
+		Path p;
+		
+		poly = PolygonOnLayer[i];
+
+		p.resize(poly->GetPoints());
+		for (unsigned int i = 0; i < poly->GetPoints(); i++) {
+			p[i].X = rounded(poly->GetXCoords(i) / poly->GetLayer()->Units->Unitu);
+			p[i].Y = rounded(poly->GetYCoords(i) / poly->GetLayer()->Units->Unitu);
+		}
+
+		if (i==0) { 
+			c.AddPath(p, ptClip, true);
+		} else {
+			c.AddPath(p, ptSubject, true);
+		}
+
+	}
+	
+	c.Execute(ctUnion, res, pftPositive, pftPositive);
+	
 	PolygonItemsChecked.Add(PolygonOnLayer);
 	
 	// Reset Timer
@@ -1984,6 +2448,7 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems,
 		if (biggest_poly == NULL || poly->GetBBox()->isBBInside(*biggest_poly->GetBBox()))
 			biggest_poly = poly;
 		PolygonItemsOutSet.insert(poly);
+		
 		//PolygonItemsChecked.push_back(poly);
 
 		vector<GDSPolygon*> PolygonItemstoCheck = PolygonItemsChecked.GetPolyNear(*poly->GetBBox());
@@ -1994,7 +2459,7 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems,
 			
 			// Check timer?
 			if (wm->timer(time, 0) > Waittime) {
-				v_printf(0, "\rLayer %s Done %5.2f%% (%zd/%zd)", Layer->Name, 1.0*(i+j/ TotalNbPoly) / (TotalNbPoly)*100.0, i, TotalNbPoly);
+				v_printf(0, "\rLayer %s Done %5.2f%% (%zd/%zd)", Layer->Name, (i+1.0*(j)/ PolygonItemstoCheck.size()) / (TotalNbPoly)*100.0, i, TotalNbPoly);
 				fflush(stdout);
 				wm->timer(time, 1);
 			}
@@ -2012,15 +2477,28 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems,
 			if(!GDSBB::intersect(*poly->GetBBox(), *polygon->GetBBox()))
 				continue;
 			
+			//if (polygon->isPolygonInside_wborders(*poly) && !GDSPolygon::intersect(poly, polygon)) {
 			if (polygon->isPolygonInside_wborders(*poly)) {
 				// Remove poly
+				//polygon->Merge(poly);
+				//PolygonMerge.push_back(polygon);
 				PolygonRemoveItems.insert(poly);
+				PolygonItemsChecked.Remove(poly);
 				break;
 			}			
 			
+			//if (poly->isPolygonInside_wborders(*polygon) && !GDSPolygon::intersect(poly, polygon)) {
 			if (poly->isPolygonInside_wborders(*polygon)) {
 				// Remove polygon
+				//poly->Merge(polygon);
+				//PolygonMerge.push_back(poly);
+				if (polygon->GetBBox()->min == Point2D(-27.89, 56.41)) {
+					assert(i == i);
+					poly->isPolygonInside_wborders(*polygon);
+				}
+
 				PolygonRemoveItems.insert(polygon);
+				PolygonItemsChecked.Remove(polygon);
 				continue;
 
 			} else if (GDSPolygon::intersect(poly, polygon)) {
@@ -2033,15 +2511,26 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems,
 					v_printf(0, "\rWARNING, Merge polygon on layer %s (Last repport ...)\n", Layer->Name);
 					WarningCnt += 1;
 				}
-				if (poly->GetBBox()->isBBInside(*polygon->GetBBox())) {
+				if (polygon->GetBBox()->min == Point2D(-27.89, 56.41)) {
+					assert(i == i);
+					
+				}
+				GDSBB prevBB = *poly->GetBBox();
 					poly->Merge(polygon);
 					PolygonRemoveItems.insert(polygon);
+				// Update 
+				PolygonItemsChecked.Remove(polygon);
+				if (PolygonItemsChecked.Update(poly, prevBB)) {
+					if(j >0)
+						j = j-1;
 				}
 				else {
-					polygon->Merge(poly);
-					PolygonRemoveItems.insert(poly);
-					break;
+					// restart from begining as not touching polygon may touch now
+					j = 0;
+
 				}
+				PolygonItemstoCheck = PolygonItemsChecked.GetPolyNear(*poly->GetBBox());
+				
 			}
 		}
 	}

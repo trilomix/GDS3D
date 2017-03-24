@@ -2,11 +2,28 @@
 #define __GEOPOLYGON__H
 
 #include "gdsobject_ogl.h"
+// add as recursive
+class GeoPolygon;
+
+class GoePolyPoint {
+public:
+	GeoPolygon* poly;
+	size_t index;
+	GoePolyPoint() { this->poly = NULL; this->index = 0; }
+	GoePolyPoint(GeoPolygon* poly, size_t index) { this->poly = poly; this->index = index; };
+	inline bool operator==(GoePolyPoint Poly_P) const;
+};
+
+inline bool GoePolyPoint::operator==(GoePolyPoint P) const {
+	return poly == P.poly && index == P.index;
+}
+
 
 struct CoordMeshElemSize {
 	Point2D Coord;
 	double TopMeshElemSize;
 	double BottomMeshElemSize;
+	vector<GoePolyPoint> Neighbors;
 };
 
 struct MeshElemSize {
@@ -43,8 +60,10 @@ public:
 
 	//GeoPolygon(double Height, double Thickness, ProcessLayer * Layer);
 	//GeoPolygon(double Height, double Thickness, ProcessLayer * Layer, bool isHole);
+	GeoPolygon() {};
 	GeoPolygon(char * GDS_Name, double Height, double Thickness, ProcessLayer * Layer, bool isHole);
 	GeoPolygon(char * GDS_Name, GDSPolygon * poly, bool isHole);
+	GeoPolygon(char * GDS_Name, vector<Point2D> polycontour, bool isHole, ProcessLayer * Layer);
 	//GeoPolygon(GDSPolygon * poly, bool isHole);
 	~GeoPolygon();
 	void AddPoint(Point2D P);
@@ -70,6 +89,8 @@ public:
 	void AddHole(GeoPolygon * Hole);
 	void AddHole(GeoPolygon * Hole, bool recurse);
 	vector<GeoPolygon*> GetHoles();
+	vector<GeoPolygon*> GetAllChildren();
+	vector<GeoPolygon*> GetAllChildren(bool wo_Holes);
 	void FindHole(Point2D I);
 	void AddLine(size_t ID);
 	void AddTopLine(size_t ID);
@@ -84,16 +105,23 @@ public:
 	bool IsExtruded_Points();
 	void SetIsHole(bool IsHole);
 	bool IsHole();
+	bool hasPoly(GeoPolygon * poly);
+	bool isInHole(GeoPolygon * poly);
 	void SetMeshElemSize();
-	bool SetMeshElemSize(double Size);
-	bool SetMeshElemSize(GeoPolygon * poly, bool Top, double TopDownRatio);
+	size_t SetMeshElemSize(double Size);
+	bool SetPointMeshvsLayer(CoordMeshElemSize * PointA, CoordMeshElemSize PointB, double dist, bool Top, double TopDownRatio, bool segment, MeshElemSize * curMesh);
+	size_t SetMeshElemSize(GeoPolygon * poly, bool Top, double TopDownRatio);
 	bool DistBB2BBLessThan(GeoPolygon * poly, double dist);
 	//bool SetMeshElemSize(GeoPolygon * poly, bool Top);
-	bool MinDistFromPoly(GeoPolygon * poly, double TopDownRatio);
-	bool SetMeshElemSize(GeoPolygon * poly);
+	size_t MinDistFromPoly(GeoPolygon * poly, double TopDownRatio);
+	size_t SetMeshElemSize(GeoPolygon * poly);
+	bool SetPointMeshElemSize(double * PointAMeshElemSize, double PointBMeshElemSize, double dist, double distAB);
+	size_t SetPointMeshElemSize(CoordMeshElemSize* PointA, const CoordMeshElemSize PointB, double dist);
+	size_t SetPointsMeshElemSize(double TopDownRatio);
+	bool AddPointNeighbor(size_t index, GoePolyPoint Poly_P);
 	double GetMeshElemSizeMin();
 	double GetMeshElemSize();
-	double GetMeshElemSize(bool * Modif);
+	double GetMeshElemSize(size_t * Modif);
 	string GetPointsAtZ(size_t cur_Point_Index, size_t cur_Line_Index, double z, double MeshFactor);
 	string GetBottomGeo(size_t cur_Line_Index);
 	string GetBottomGeoTransfinite();

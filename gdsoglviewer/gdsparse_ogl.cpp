@@ -645,13 +645,13 @@ void GDSParse_ogl::query_update() {
 					delete topcell_Name;
 					gds = gds->Next;
 				}
-			}
-			
 			_process->SetCurrentProcess(_process->GetLayer()->ProcessName);
 			_Objects->ConnectReferences();
 			ComputeVirtualLayer();
+            }
 			
-			_process->SetCurrentProcess(_process->GetLayer()->ProcessName);
+			
+			//_process->SetCurrentProcess(_process->GetLayer()->ProcessName);
 			SetTopcell(tmp); // This is not elegant..
 			initWorld();
 		}
@@ -663,7 +663,9 @@ void GDSParse_ogl::query_update() {
 			strcpy(tmp, _topcell->GetName());
 			v_printf(1, "GDS has been updated, reloading..\n");
 			Reload();
+			_Objects->ConnectReferences();
 			SetTopcell(tmp); // This is not elegant..
+			ComputeVirtualLayer();
 			initWorld();
 		}
 		

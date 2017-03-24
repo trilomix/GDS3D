@@ -99,9 +99,11 @@ public:
 	void SaveToGEO(GDSObject_ogl * object, bool flat);
 	void Convert_Polygon();
 	void LayerList();
-	bool CheckMeshSize(GeoPolygon * poly, vector<GeoPolygon*> PolyItemsNear, double TopDownMaxRatio, bool Top);
-	void SetMeshElemSize(GeoPolygon * poly, bool * Modif);
+	size_t CheckMeshSize(GeoPolygon * poly, vector<GeoPolygon*> PolyItemsNear, double TopDownMaxRatio, bool Top);
+	void SetMeshElemSize(GeoPolygon * poly, size_t * Modif, size_t *TotDone, size_t TotalNbPoly);
+	void SetMeshElemSize(GeoPolygon * poly, size_t * Modif, size_t *TotDone, size_t TotalNbPoly, bool Countpoly);
 	void Traverse(GDSObject * object, GDSMat object_mat);
+	vector<GeoPolygon*> TraverseGeoLayer(GeoPolygon * poly);
 	void Geometry();
 	void Simu_GetDP();
 	void HeatLayer(GeoPolygon * Polygon, GDSGroup * cur_GDS);
@@ -114,6 +116,11 @@ public:
 	void Polygon(GeoPolygon * polygon, ProcessLayer * do_layer, bool dielectrique);
 	void Polygon(GeoPolygon * polygon, ProcessLayer * do_layer, bool dielectrique, double MeshElemSize);
 	void ConnectPoly(GeoPolygon * polygon, bool Top);
+	vector<GeoPolygon*> SimplifyPolyItems_wClipper(vector<GDSPolygon*> PolygonItems, ProcessLayer * Layer);
+	vector<GeoPolygon*> SimplifyPolyItems_wClipper(vector<GeoPolygon*> PolygonItems, ProcessLayer * Layer);
+	vector<GeoPolygon*> Convert_ClipperPolyTree(ClipperLib::PolyTree * pTree, ProcessLayer * Layer);
+	GeoPolygon * Convert_ClipperPolyNode(const ClipperLib::PolyNode pNode, ProcessLayer * Layer);
+	//GeoPolygon * Convert_ClipperPolyNode(ClipperLib::PolyNode * pNode, ProcessLayer * Layer);
 	vector<GeoPolygon*> SimplifyPolyItems(vector<GDSPolygon*> PolygonItems, ProcessLayer * Layer);
 	vector<GeoPolygon*> GetContactPolyItems(GeoPolygon * poly, vector<GeoPolygon*> PolygonItems, bool Top);
 };

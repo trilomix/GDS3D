@@ -1,7 +1,7 @@
 #include "geopolygon.h"
 #include <algorithm>
 
-#ifdef linux
+#if defined(linux) || defined(__APPLE__)
 #include<sstream>
 template <typename T>
 std::string to_string(T value)
@@ -50,6 +50,25 @@ GeoPolygon::GeoPolygon(char* GDS_Name, GDSPolygon *poly, bool isHole) : GDSPolyg
 
 }
 
+GeoPolygon::GeoPolygon(char* GDS_Name, vector<Point2D> polycontour, bool isHole, struct ProcessLayer *Layer ) : GDSPolygon(Layer)
+{
+	GDSName = GDS_Name;
+	writen = false;
+	hole = isHole;
+	extruded_Points = false;
+	extruded = false;
+	Bottom_Surfaces_Contact = "";
+	EndGeo = "";
+	MeshElem.Size = 0;
+
+	for (size_t j = 0; j < polycontour.size(); j++) {
+		AddPoint(polycontour[j]);
+	}
+	Orientate();
+	Tesselate();
+	SetMeshElemSize();
+
+}
 GeoPolygon::~GeoPolygon()
 {
 	for (size_t i = 0; i < Holes.size(); i++) {
@@ -92,6 +111,9 @@ size_t GeoPolygon::GetPoints() {
 
 CoordMeshElemSize GeoPolygon::GetMeshCoords(size_t Index)
 {
+	if (Index >= _CoordMeshElemSize.size()) {
+		Index = Index & (_CoordMeshElemSize.size()-1);
+	}
 	return _CoordMeshElemSize[Index];
 }
 
@@ -345,6 +367,8 @@ void GeoPolygon::AddHole(GeoPolygon* Hole) {
 }
 void GeoPolygon::AddHole(GeoPolygon* Hole, bool recurse) {
 	Point2D Intersect;
+	
+	assert(IsHole()||isPolygonInside(*Hole));
 	if (recurse) {
 		while (Hole->intersect(&Intersect)) {
 			Hole->FindHole(Intersect);
@@ -368,13 +392,35 @@ vector<GeoPolygon*> GeoPolygon::GetHoles() {
 	return Holes;
 }
 
+vector<GeoPolygon*> GeoPolygon::GetAllChildren() {
+	return GetAllChildren(false);
+}
+
+vector<GeoPolygon*> GeoPolygon::GetAllChildren(bool wo_Holes) {
+	vector<GeoPolygon*> PolygonItemsOutVec;
+	for (size_t i = 0; i < Holes.size(); i++) {
+		GeoPolygon* GEO_child = Holes[i];
+		if (!(GEO_child->IsHole() && wo_Holes)) {
+			// Add Children
+			PolygonItemsOutVec.push_back(GEO_child);
+		}
+		vector<GeoPolygon*> ChildItemsOutVec = GEO_child->GetAllChildren(wo_Holes);
+		for (size_t j = 0; j < ChildItemsOutVec.size(); j++) {
+			// Add Children Chrildren
+			PolygonItemsOutVec.push_back(ChildItemsOutVec[j]);
+		}
+	}
+
+	return PolygonItemsOutVec;
+}
+
 void GeoPolygon::FindHole(Point2D I) {
 	// When convert GDSPolygon To GeoPolygon we need to recreate hole 
 	GeoPolygon* Poly0 = new GeoPolygon(GDSName, GetHeight(), GetThickness(), GetLayer(), false);
 	GeoPolygon* Poly1 = new GeoPolygon(GDSName, GetHeight(), GetThickness(), GetLayer(), false);
 	bool cur_Poly0 = true;
-	bool HoleDone = false;
-	Point2D prev_Point(GetCoords(GetPoints() - 1));
+	//bool HoleDone = false;
+	//Point2D prev_Point(GetCoords(GetPoints() - 1));
 	size_t i;
 	size_t j;
 	size_t k;
@@ -452,7 +498,7 @@ void GeoPolygon::FindHole(Point2D I) {
 		Poly1->SetIsHole(true);
 		AddHole(Poly1, true /*recurse*/);
 	}
-	else {
+	else if(Poly1->isPolygonInside(*Poly0)) {
 		if (Holes.size() > 0) {
 			for (size_t i = 0; i < Holes.size(); i++) {
 				Poly1->AddHole(Holes[i], false /*no recurse*/);
@@ -461,6 +507,44 @@ void GeoPolygon::FindHole(Point2D I) {
 		Poly1->CopyInto(this);
 		Poly0->SetIsHole(true);
 		AddHole(Poly0, true /*recurse*/);
+
+	} else {
+		
+		if (IsHole()) {
+			Poly1->SetIsHole(true);
+			if (Holes.size() > 0) {
+				for (size_t i = 0; i < Holes.size(); i++) {
+					Poly1->AddHole(Holes[i], false /*no recurse*/);
+				}
+			}
+			Poly1->CopyInto(this);
+			Poly0->SetIsHole(true);
+			AddHole(Poly0, true /*recurse*/);
+		}
+	else {
+			if (Poly1->GetBBox()->isBBInside(*Poly0->GetBBox())) {
+		if (Holes.size() > 0) {
+			for (size_t i = 0; i < Holes.size(); i++) {
+				Poly1->AddHole(Holes[i], false /*no recurse*/);
+			}
+		}
+		Poly1->CopyInto(this);
+		Poly0->SetIsHole(true);
+		AddHole(Poly0, true /*recurse*/);
+
+			} else if (Poly0->GetBBox()->isBBInside(*Poly1->GetBBox())) {
+				if (Holes.size() > 0) {
+					for (size_t i = 0; i < Holes.size(); i++) {
+						Poly0->AddHole(Holes[i], false /*no recurse*/);
+					}
+				}
+				Poly0->CopyInto(this);
+				Poly1->SetIsHole(true);
+				AddHole(Poly1, true /*recurse*/);
+			} else {
+				assert(IsHole());
+			}
+		}
 	}
 
 }
@@ -529,8 +613,27 @@ bool GeoPolygon::IsHole()
 {
 	return hole;
 }
+
+bool GeoPolygon::hasPoly(GeoPolygon* poly)
+{
+	for (size_t i = 0; i < Holes.size(); i++) {
+		if (Holes[i] == poly)
+			return true;
+	}
+	return false;
+}
+
+bool GeoPolygon::isInHole(GeoPolygon* poly)
+{
+	for (size_t i = 0; i < Holes.size(); i++) {
+		if (Holes[i]->GDSPolygon::isPolygonInside( *poly))
+			return true;
+	}
+	return false;
+}
+
 void GeoPolygon::SetMeshElemSize() {
-	double  ratio = GDSPolygon::Area() / GetBBox()->area();
+	//double  ratio = GDSPolygon::Area() / GetBBox()->area();
 	double  elem = sqrt(GDSPolygon::Area());
 	if (GetPoints() <= 100)
 		if (isSimple()) {
@@ -546,18 +649,18 @@ void GeoPolygon::SetMeshElemSize() {
 	}
 }
 
-bool GeoPolygon::SetMeshElemSize(double Size)
+size_t GeoPolygon::SetMeshElemSize(double Size)
 {
-	bool Modif = false;
+	size_t Modif = 0;
 	if (MeshElem.Size == 0) {
 		MeshElem.Size = round2digit(Size);
 		MeshElem.Max = MeshElem.Size;
 		MeshElem.Min = MeshElem.Size;
 		MeshElem.MaxDiagonal = GetBBox()->max.double_distance(GetBBox()->min);
-		Modif = true;
+		Modif += 1;
 	}
 	else
-		if (Size < MeshElem.Size) {
+		if (round2digit(Size) < MeshElem.Size) {
 			double MeshElemSizeCalc = round2digit(Size);
 			if (MeshElem.Size != MeshElemSizeCalc) {
 				MeshElem.Size = MeshElemSizeCalc;
@@ -566,13 +669,12 @@ bool GeoPolygon::SetMeshElemSize(double Size)
 				for (size_t i = 0; i < Holes.size(); i++) {
 					GeoPolygon* hole = Holes[i];
 					if (hole->GetMeshElemSize() > 10 * MeshElem.Size) {
-						hole->SetMeshElemSize(this);
+						Modif += hole->SetMeshElemSize(this);
 					}
 				}
-				Modif = true;
 			}
 		}
-	if (Modif) {
+	if (Modif>0) {
 		// Update Points Mesh
 		for (size_t i = 0; i < GetPoints(); i++) {
 			CoordMeshElemSize *PointMesh = &_CoordMeshElemSize[i];
@@ -594,8 +696,64 @@ bool GeoPolygon::SetMeshElemSize(double Size)
 	return Modif;
 }
 
-bool GeoPolygon::SetMeshElemSize(GeoPolygon *poly, bool Top, double TopDownRatio) {
+bool GeoPolygon::SetPointMeshvsLayer(CoordMeshElemSize *PointA, CoordMeshElemSize PointB, double dist, bool Top, double TopDownRatio, bool segment, MeshElemSize *curMesh) {
+	double *CurSideMeshElemSize;
+	double *OtherSideMeshElemSize;
+	double PolyMesh;
 	bool Modif = false;
+
+	if (Top) {
+		CurSideMeshElemSize = &PointA->TopMeshElemSize;
+		OtherSideMeshElemSize = &PointA->BottomMeshElemSize;
+		PolyMesh = PointB.BottomMeshElemSize;
+	}
+	else {
+		CurSideMeshElemSize = &PointA->BottomMeshElemSize;
+		OtherSideMeshElemSize = &PointA->TopMeshElemSize;
+		PolyMesh = PointB.TopMeshElemSize;
+	}
+
+	double distAB = PointA->Coord.double_distance(PointB.Coord);
+
+	if (distAB < (PolyMesh > dist ? PolyMesh : *CurSideMeshElemSize)) {
+		// segment point is close to point
+		if (SetPointMeshElemSize(CurSideMeshElemSize, PolyMesh, dist, distAB)) {
+			Modif = true;
+		}
+	}
+	else if (segment && PolyMesh > dist) {
+		if (*CurSideMeshElemSize > round2digit((PolyMesh * 2))+GetLayer()->Units->Unitu) {
+			*CurSideMeshElemSize = round2digit(PolyMesh * 2);
+			Modif = true;
+		}
+	}
+
+	if (*OtherSideMeshElemSize > *CurSideMeshElemSize * TopDownRatio)
+		*OtherSideMeshElemSize = round2digit(*CurSideMeshElemSize * TopDownRatio);
+	if (min(*CurSideMeshElemSize, *OtherSideMeshElemSize) < MeshElem.Min)
+		MeshElem.Min = min(*CurSideMeshElemSize, *OtherSideMeshElemSize);
+	if (curMesh->Size > *CurSideMeshElemSize * 10)
+		curMesh->Size = *CurSideMeshElemSize * 10;
+	if (Modif) {
+		// Update Max
+		double Max = *CurSideMeshElemSize;
+		for (size_t i = 0; i < _CoordMeshElemSize.size(); i++) {
+			if (_CoordMeshElemSize[i].TopMeshElemSize > Max) {
+				Max = _CoordMeshElemSize[i].TopMeshElemSize;
+			}
+			if (_CoordMeshElemSize[i].BottomMeshElemSize > Max) {
+				Max = _CoordMeshElemSize[i].BottomMeshElemSize;
+			}
+		}
+		MeshElem.Max = Max;
+
+	}
+	return Modif;
+}
+
+
+size_t GeoPolygon::SetMeshElemSize(GeoPolygon *poly, bool Top, double TopDownRatio) {
+	size_t Modif = 0;
 	//double TopDownRatio = 6;
 	//if (GetThickness() > 1) {
 	//	TopDownRatio = TopDownRatio * pow(10, floor(log10(GetThickness())))*floor(GetThickness() / pow(10, floor(log10(GetThickness()))));
@@ -603,21 +761,17 @@ bool GeoPolygon::SetMeshElemSize(GeoPolygon *poly, bool Top, double TopDownRatio
 	
 	if (poly->GetMeshElemSizeMin() >= MeshElem.Max)
 		return Modif;
-	if (GetLayer() == poly->GetLayer())
-		assert(Modif == Modif);
-
+	/*
 	if (!IsHole()) {
 		for (size_t i = 0; i < Holes.size(); i++) {
-			if (Holes[i]->SetMeshElemSize(poly, Top, TopDownRatio) && !Modif)
-				Modif = true;
+			Modif += Holes[i]->SetMeshElemSize(poly, Top, TopDownRatio);
 		}
-	}
-
+	}*/
+	/*
 	for(size_t i = 0; i < poly->GetHoles().size(); i++){
 		GeoPolygon *poly_hole = poly->GetHoles()[i];
-		if (SetMeshElemSize(poly_hole, Top, TopDownRatio) && !Modif)
-			Modif = true;
-	}
+		Modif += SetMeshElemSize(poly_hole, Top, TopDownRatio);
+	}*/
 	size_t i, j;
 	MeshElemSize curMesh = MeshElem;
 	double dist;
@@ -625,22 +779,14 @@ bool GeoPolygon::SetMeshElemSize(GeoPolygon *poly, bool Top, double TopDownRatio
 		// All points
 		CoordMeshElemSize A = GetMeshCoords(i);
 		CoordMeshElemSize B = GetMeshCoords(j);
-		
-		if (A.Coord == Point2D(954.21, 1437.22)) {
-			assert(i == i);
-		}
-
-		if (B.Coord == Point2D(1163.105, 1519.6)) {
-			assert(i == i);
-		}
-
+		bool found = false;
 		if (Top) {
 			dist = max(A.TopMeshElemSize, B.TopMeshElemSize);
 		}
 		else {
 			dist = max(A.BottomMeshElemSize, B.BottomMeshElemSize);
 		}
-		double PolyMesh;
+		//double PolyMesh;
 		size_t k, l;
 		bool segment = false;
 		CoordMeshElemSize polyPoint = poly->GetMeshCoords(0);
@@ -651,18 +797,19 @@ bool GeoPolygon::SetMeshElemSize(GeoPolygon *poly, bool Top, double TopDownRatio
 			
 			double edgedist = dist;
 			if (C.Coord.X == D.Coord.X)
-				if (C.Coord.Y < A.Coord.Y && A.Coord.Y < D.Coord.Y || D.Coord.Y < A.Coord.Y && A.Coord.Y < C.Coord.Y
-					|| A.Coord.Y < C.Coord.Y && C.Coord.Y < B.Coord.Y || B.Coord.Y < C.Coord.Y && C.Coord.Y < A.Coord.Y) {
+				if ((C.Coord.Y < A.Coord.Y && A.Coord.Y < D.Coord.Y) || (D.Coord.Y < A.Coord.Y && A.Coord.Y < C.Coord.Y)
+					|| (A.Coord.Y < C.Coord.Y && C.Coord.Y < B.Coord.Y) || (B.Coord.Y < C.Coord.Y && C.Coord.Y < A.Coord.Y)) {
 					edgedist = fabs(C.Coord.X - A.Coord.X);
 				}
 			if (C.Coord.Y == D.Coord.Y)
-				if (C.Coord.X < A.Coord.X && A.Coord.X < D.Coord.X || D.Coord.X < A.Coord.X && A.Coord.X < C.Coord.X
-					|| A.Coord.X < C.Coord.X && C.Coord.X < B.Coord.X || B.Coord.X < C.Coord.X && C.Coord.X < A.Coord.X) {
+				if ((C.Coord.X < A.Coord.X && A.Coord.X < D.Coord.X) || (D.Coord.X < A.Coord.X && A.Coord.X < C.Coord.X)
+					|| (A.Coord.X < C.Coord.X && C.Coord.X < B.Coord.X) || (B.Coord.X < C.Coord.X && C.Coord.X < A.Coord.X)) {
 					edgedist = fabs(C.Coord.Y - A.Coord.Y);
 				}
 			if (edgedist < dist) {
 				segment = true;
 				dist = edgedist;
+				found = true;
 				if (A.Coord.double_distance(C.Coord) <= A.Coord.double_distance(D.Coord)) {
 					polyPoint = C;
 				}
@@ -673,145 +820,27 @@ bool GeoPolygon::SetMeshElemSize(GeoPolygon *poly, bool Top, double TopDownRatio
 				double pointdist = A.Coord.double_distance(C.Coord);
 				if (pointdist < dist) {
 					dist = pointdist;
+					found = true;
 					polyPoint = C;
 					segment = false;
 				}
 			}
 		}
+		if (found) {
 		CoordMeshElemSize* Point;
 		CoordMeshElemSize* Point1;
 		
-		PolyMesh = Top ? polyPoint.BottomMeshElemSize : polyPoint.TopMeshElemSize;
 		Point = &_CoordMeshElemSize[i];
 		Point1 = &_CoordMeshElemSize[j];
 
-		if (Top && dist < Point->TopMeshElemSize) {
-			//if (Point->Coord.double_distance(polyPoint.Coord) < MeshElem.Size) {
-			if (Point->Coord.double_distance(polyPoint.Coord) < (PolyMesh > dist ? PolyMesh : Point->TopMeshElemSize)) {
-				// segment point is close to point
-				if (PolyMesh > dist) {
-					if (Point->TopMeshElemSize > PolyMesh + GetLayer()->Units->Unitu) {
-						Point->TopMeshElemSize = PolyMesh;
-						Modif = true;
-					}
-				}
-				else {
-					if (Point->TopMeshElemSize > dist) {
-						Point->TopMeshElemSize = round2digit(dist);
-						Modif = true;
-					}
+			Modif += SetPointMeshvsLayer(Point, polyPoint, dist, Top, TopDownRatio, segment, &curMesh);
+			if (segment) {
+				Modif += SetPointMeshvsLayer(Point1, polyPoint, dist, Top, TopDownRatio, segment, &curMesh);
 				}
 			}
-			else if (segment && PolyMesh > dist) {
-				if (Point->TopMeshElemSize > (PolyMesh * 2)) {
-					Point->TopMeshElemSize = round2digit(PolyMesh * 2);
-					Modif = true;
-				}
-			}				
-			if (Point->BottomMeshElemSize > Point->TopMeshElemSize * TopDownRatio)
-				Point->BottomMeshElemSize = round2digit(Point->TopMeshElemSize * TopDownRatio);
-			if (min(Point->TopMeshElemSize, Point->BottomMeshElemSize) < MeshElem.Min)
-				MeshElem.Min = min(Point->TopMeshElemSize, Point->BottomMeshElemSize);
-			if (curMesh.Size > Point->TopMeshElemSize * 10)
-				curMesh.Size = Point->TopMeshElemSize * 10;
-		}
-		if (!Top && dist < Point->BottomMeshElemSize) {
-			//if (Point->Coord.double_distance(polyPoint.Coord) < MeshElem.Size) {
-			if (Point->Coord.double_distance(polyPoint.Coord) < (PolyMesh > dist ? PolyMesh : Point->BottomMeshElemSize)) {
-				// segment point is close to poly
-				if (PolyMesh > dist) {
-					if (Point->BottomMeshElemSize > PolyMesh + GetLayer()->Units->Unitu) {
-						Point->BottomMeshElemSize = PolyMesh;
-						Modif = true;
-					}
-				}
-				else {
-					if (Point->BottomMeshElemSize > dist) {
-						Point->BottomMeshElemSize = round2digit(dist);
-						Modif = true;
-					}
-				}
-			}
-			else if (segment && PolyMesh > dist) {
-				if (Point->BottomMeshElemSize > (PolyMesh * 2)) {
-					Point->BottomMeshElemSize = round2digit(PolyMesh * 2);
-					Modif = true;
-				}
-			}
-			if (Point->TopMeshElemSize > Point->BottomMeshElemSize * TopDownRatio)
-				Point->TopMeshElemSize = round2digit(Point->BottomMeshElemSize * TopDownRatio);
-			if (min(Point->TopMeshElemSize, Point->BottomMeshElemSize) < MeshElem.Min)
-				MeshElem.Min = min(Point->TopMeshElemSize, Point->BottomMeshElemSize);
-			if (curMesh.Size > Point->BottomMeshElemSize * 10)
-				curMesh.Size = Point->BottomMeshElemSize * 10;
-
-		}
-		if (Top && segment && dist < Point1->TopMeshElemSize) {
-			//if (Point1->Coord.double_distance(polyPoint.Coord) < MeshElem.Size) {
-			if (Point1->Coord.double_distance(polyPoint.Coord) < (PolyMesh > dist ? PolyMesh : Point1->TopMeshElemSize)) {
-				// segment point is close to poly
-				if (PolyMesh > dist) {
-					if (Point1->TopMeshElemSize > PolyMesh + GetLayer()->Units->Unitu) {
-						Point1->TopMeshElemSize = PolyMesh;
-						Modif = true;
-					}
-				}
-				else {
-					if (Point1->TopMeshElemSize > dist) {
-						Point1->TopMeshElemSize = round2digit(dist);
-						Modif = true;
-					}
-				}
-			}
-			else if (segment && PolyMesh > dist) {
-				if (Point1->TopMeshElemSize > (PolyMesh * 2)) {
-					Point1->TopMeshElemSize = round2digit(PolyMesh * 2);
-					Modif = true;
-				}
-			}
-			if (Point1->BottomMeshElemSize > Point1->TopMeshElemSize * TopDownRatio)
-				Point1->BottomMeshElemSize = round2digit(Point1->TopMeshElemSize * TopDownRatio);
-			if (min(Point1->TopMeshElemSize, Point1->BottomMeshElemSize) < MeshElem.Min)
-				MeshElem.Min = min(Point->TopMeshElemSize, Point->BottomMeshElemSize);
-			if (curMesh.Size > Point1->TopMeshElemSize * 10)
-				curMesh.Size = Point1->TopMeshElemSize * 10;
-
-		}
-		if (!Top && segment && dist < Point1->BottomMeshElemSize) {
-			//if (Point1->Coord.double_distance(polyPoint.Coord) < MeshElem.Size) {
-			if (Point1->Coord.double_distance(polyPoint.Coord) < (PolyMesh > dist ? PolyMesh : Point1->BottomMeshElemSize)) {
-				// segment point is close to poly
-				if (PolyMesh > dist) {
-					if (Point1->BottomMeshElemSize > PolyMesh + GetLayer()->Units->Unitu) {
-						Point1->BottomMeshElemSize = PolyMesh;
-						Modif = true;
-					}
-				}
-				else {
-					if (Point1->BottomMeshElemSize > dist) {
-						Point1->BottomMeshElemSize = round2digit(dist);
-						Modif = true;
-					}
-				}
-			}
-			else if (segment && PolyMesh > dist) {
-				if (Point1->BottomMeshElemSize > (PolyMesh * 2)) {
-					Point1->BottomMeshElemSize = round2digit(PolyMesh * 2);
-					Modif = true;
-				}
-			}
-			if (Point1->TopMeshElemSize > Point1->BottomMeshElemSize * TopDownRatio)
-				Point1->TopMeshElemSize = round2digit(Point1->BottomMeshElemSize * TopDownRatio);
-			if (min(Point1->TopMeshElemSize, Point1->BottomMeshElemSize) < MeshElem.Min)
-				MeshElem.Min = min(Point->TopMeshElemSize, Point->BottomMeshElemSize);
-			if (curMesh.Size > Point1->BottomMeshElemSize * 10)
-				curMesh.Size = Point1->BottomMeshElemSize * 10;
-
-		}
 	}
 	if (curMesh.Size < MeshElem.Size)
-		if (SetMeshElemSize(curMesh.Size) && !Modif)
-			Modif = true;
+		Modif += SetMeshElemSize(curMesh.Size);
 	return Modif;
 }
 
@@ -840,15 +869,15 @@ bool GeoPolygon::DistBB2BBLessThan(GeoPolygon* poly, double dist) {
 			double edgedist = dist;
 			bool edge = false;
 			if (C.X == D.X)
-				if (C.Y < A.Y && A.Y < D.Y || D.Y < A.Y && A.Y < C.Y
-					|| A.Y < C.Y && C.Y < B.Y || B.Y < C.Y && C.Y < A.Y) {
+				if ((C.Y < A.Y && A.Y < D.Y) || (D.Y < A.Y && A.Y < C.Y)
+					|| (A.Y < C.Y && C.Y < B.Y) || (B.Y < C.Y && C.Y < A.Y)) {
 					// only if A.Y is inside C.Y D.Y or C.Y is inside A.Y B.Y
 					edgedist = fabs(C.X - A.X);
 					edge = true;
 				}
 			if (C.Y == D.Y)
-				if (C.X < A.X && A.X < D.X || D.X < A.X && A.X < C.X
-					|| A.X < C.X && C.X < B.X || B.X < C.X && C.X < A.X) {
+				if ((C.X < A.X && A.X < D.X) || (D.X < A.X && A.X < C.X)
+					|| (A.X < C.X && C.X < B.X) || (B.X < C.X && C.X < A.X)) {
 					// only if A.X is inside C.X D.X or C.X is inside A.X B.X
 					edgedist = fabs(C.Y - A.Y);
 					edge = true;
@@ -878,9 +907,9 @@ bool GeoPolygon::DistBB2BBLessThan(GeoPolygon* poly, double dist) {
 }
 
 
-bool GeoPolygon::MinDistFromPoly(GeoPolygon* poly, double TopDownRatio) {
+size_t GeoPolygon::MinDistFromPoly(GeoPolygon* poly, double TopDownRatio) {
 	//Estimate the distance from edge to edge
-	bool Modif = false;
+	size_t Modif = 0;
 	size_t i, j;
 	double dist = max(poly->MeshElem.Size, MeshElem.Size);
 
@@ -892,8 +921,6 @@ bool GeoPolygon::MinDistFromPoly(GeoPolygon* poly, double TopDownRatio) {
 
 	if (!Needtodig)
 		return Modif;
-	if (GetLayer() != poly->GetLayer())
-		assert(dist == dist);
 
 	double curMeshSize = MeshElem.Size;
 
@@ -903,35 +930,27 @@ bool GeoPolygon::MinDistFromPoly(GeoPolygon* poly, double TopDownRatio) {
 		CoordMeshElemSize A = GetMeshCoords(i);
 		CoordMeshElemSize B = GetMeshCoords(j);
 		
-		if (A.Coord == Point2D(1158.345, 1706.54)) {
-			assert(i == i);
-		}
-
-		if (B.Coord == Point2D(1163.105, 1519.6)) {
-			assert(i == i);
-		}
-
 		dist = max(poly->MeshElem.Size, curMeshSize);
 		size_t k, l;
 		bool segment = false;
 		bool found = false;
-		double pointdist = dist;
-		double edgedist = dist;
+		double pointdist;
+		double edgedist;
 		CoordMeshElemSize PointC;
 		CoordMeshElemSize PointD;
 
 		for (k = 0, l = poly->GetPoints() - 1; k < poly->GetPoints(); l = k++) {
 			CoordMeshElemSize C = poly->GetMeshCoords(k);
 			CoordMeshElemSize D = poly->GetMeshCoords(l);
-			pointdist = dist;
+			//pointdist = dist;
 			edgedist = dist;
 			if (C.Coord.X == D.Coord.X)
-				if (C.Coord.Y < A.Coord.Y && A.Coord.Y < D.Coord.Y || D.Coord.Y < A.Coord.Y && A.Coord.Y < C.Coord.Y
-					|| A.Coord.Y < C.Coord.Y && C.Coord.Y < B.Coord.Y || B.Coord.Y < C.Coord.Y && C.Coord.Y < A.Coord.Y)
+				if ((C.Coord.Y < A.Coord.Y && A.Coord.Y < D.Coord.Y) || (D.Coord.Y < A.Coord.Y && A.Coord.Y < C.Coord.Y)
+					|| (A.Coord.Y < C.Coord.Y && C.Coord.Y < B.Coord.Y) || (B.Coord.Y < C.Coord.Y && C.Coord.Y < A.Coord.Y))
 					edgedist = fabs(C.Coord.X - A.Coord.X);
 			if (C.Coord.Y == D.Coord.Y)
-				if (C.Coord.X < A.Coord.X && A.Coord.X < D.Coord.X || D.Coord.X < A.Coord.X && A.Coord.X < C.Coord.X
-					|| A.Coord.X < C.Coord.X && C.Coord.X < B.Coord.X || B.Coord.X < C.Coord.X && C.Coord.X < A.Coord.X)
+				if ((C.Coord.X < A.Coord.X && A.Coord.X < D.Coord.X) || (D.Coord.X < A.Coord.X && A.Coord.X < C.Coord.X)
+					|| (A.Coord.X < C.Coord.X && C.Coord.X < B.Coord.X) || (B.Coord.X < C.Coord.X && C.Coord.X < A.Coord.X))
 					edgedist = fabs(C.Coord.Y - A.Coord.Y);
 			if (edgedist < dist) {
 				dist = edgedist;
@@ -958,9 +977,7 @@ bool GeoPolygon::MinDistFromPoly(GeoPolygon* poly, double TopDownRatio) {
 				}
 			}
 		}
-		if (A.Coord == Point2D(1158.345, 1706.54)) {
-			assert(i == i);
-		}
+		
 		if (!found) {
 			continue;
 		}
@@ -970,155 +987,154 @@ bool GeoPolygon::MinDistFromPoly(GeoPolygon* poly, double TopDownRatio) {
 
 			PointA = &_CoordMeshElemSize[i];
 			PointB = &_CoordMeshElemSize[j];
-			if (GetLayer() != poly->GetLayer())
-				assert(i == i);
-			//if (max(max(PointA->TopMeshElemSize, PointA->BottomMeshElemSize), max(PointB->TopMeshElemSize, PointB->BottomMeshElemSize))
-			//	<= min(min(PointC.TopMeshElemSize, PointC.BottomMeshElemSize), min(PointD.TopMeshElemSize, PointD.BottomMeshElemSize)))
-			//	continue;
-			//Modif = true;
-			if (dist < 1) {
-				dist = round2digit(dist);
-				if (PointA->TopMeshElemSize > PointC.TopMeshElemSize)
-					PointA->TopMeshElemSize = max(dist, PointC.TopMeshElemSize);
-				if (PointA->BottomMeshElemSize > PointC.BottomMeshElemSize)
-					PointA->BottomMeshElemSize = max(dist, PointC.BottomMeshElemSize);
-				if (PointB->TopMeshElemSize > PointD.TopMeshElemSize)
-					PointB->TopMeshElemSize = max(dist, PointD.TopMeshElemSize);
-				if (PointB->BottomMeshElemSize > PointD.BottomMeshElemSize)
-					PointB->BottomMeshElemSize = max(dist, PointD.BottomMeshElemSize);
-			}
-			else {
-				if (PointA->TopMeshElemSize > PointC.TopMeshElemSize*dist && PointA->Coord.double_distance(PointC.Coord) < PointC.TopMeshElemSize*dist)
-					PointA->TopMeshElemSize = round2digit(PointC.TopMeshElemSize*dist);
-				if (PointA->BottomMeshElemSize > PointC.BottomMeshElemSize*dist && PointA->Coord.double_distance(PointC.Coord) < PointC.TopMeshElemSize*dist)
-					PointA->BottomMeshElemSize = round2digit(PointC.BottomMeshElemSize*dist);
-				if (PointB->TopMeshElemSize > PointD.TopMeshElemSize*dist && PointB->Coord.double_distance(PointD.Coord) < PointD.TopMeshElemSize*dist)
-					PointB->TopMeshElemSize = round2digit(PointD.TopMeshElemSize*dist);
-				if (PointB->BottomMeshElemSize > PointD.BottomMeshElemSize*dist && PointB->Coord.double_distance(PointD.Coord) < PointD.TopMeshElemSize*dist)
-					PointB->BottomMeshElemSize = round2digit(PointD.BottomMeshElemSize*dist);
-			}
+			Modif += SetPointMeshElemSize(PointA, PointC, dist);
+			Modif += SetPointMeshElemSize(PointB, PointD, dist);
+			
 			if (MeshElem.Min > min(PointA->TopMeshElemSize, PointA->BottomMeshElemSize))
 				MeshElem.Min = min(PointA->BottomMeshElemSize, PointA->TopMeshElemSize);
 			if (MeshElem.Min > min(PointB->TopMeshElemSize, PointB->BottomMeshElemSize))
 				MeshElem.Min = min(PointB->TopMeshElemSize, PointB->BottomMeshElemSize);
+			if (MeshElem.MaxDiagonal > 1) {
 			if (curMeshSize > max(PointA->BottomMeshElemSize, PointA->TopMeshElemSize) * MeshElem.MaxDiagonal)
 				curMeshSize = max(PointA->BottomMeshElemSize, PointA->TopMeshElemSize) * MeshElem.MaxDiagonal;
 			if (curMeshSize > max(PointB->BottomMeshElemSize, PointB->TopMeshElemSize) * MeshElem.MaxDiagonal)
 				curMeshSize = max(PointB->BottomMeshElemSize, PointB->TopMeshElemSize) * MeshElem.MaxDiagonal;
-			segment = false;
+			} else {
+				if (curMeshSize > max(PointA->BottomMeshElemSize, PointA->TopMeshElemSize) )
+					curMeshSize = max(PointA->BottomMeshElemSize, PointA->TopMeshElemSize) ;
+				if (curMeshSize > max(PointB->BottomMeshElemSize, PointB->TopMeshElemSize) )
+					curMeshSize = max(PointB->BottomMeshElemSize, PointB->TopMeshElemSize) ;
+			}
+			//segment = false;
 		} else if (!segment) {
 			CoordMeshElemSize* PointA;
 			//Modif = true;
 			PointA = &_CoordMeshElemSize[i];
-			if (dist <= 1) {
-				dist = round2digit(dist);
-				if (PointA->TopMeshElemSize > PointC.TopMeshElemSize) {
-					PointA->TopMeshElemSize = max(PointC.TopMeshElemSize, dist);
-					Modif = true;
-				}
-				if (PointA->BottomMeshElemSize > PointC.BottomMeshElemSize) {
-					PointA->BottomMeshElemSize = max(PointC.BottomMeshElemSize, dist);
-					Modif = true;
-				}
-			}
-			else {
-				
-				if (PointA->TopMeshElemSize > PointC.TopMeshElemSize*dist) {
-					double dist_calc = max(PointC.TopMeshElemSize*dist, dist);
-					dist_calc = round2digit(dist_calc);
-					PointA->TopMeshElemSize = dist_calc;
-					Modif = true;
-				}
+			Modif += SetPointMeshElemSize(PointA, PointC, dist);
 
-				if (PointA->BottomMeshElemSize > PointC.BottomMeshElemSize*dist) {
-					double dist_calc = max(PointC.BottomMeshElemSize*dist, dist);
-					dist_calc = round2digit(dist_calc);
-					PointA->BottomMeshElemSize = dist_calc;
-					Modif = true;
-				}
-			}
 			if (MeshElem.Min > min(PointA->TopMeshElemSize, PointA->BottomMeshElemSize))
 				MeshElem.Min = min(PointA->TopMeshElemSize, PointA->BottomMeshElemSize);
+			if (MeshElem.MaxDiagonal > 1) {
 			if (curMeshSize > max(PointA->BottomMeshElemSize, PointA->TopMeshElemSize) * MeshElem.MaxDiagonal)
 				curMeshSize = max(PointA->BottomMeshElemSize, PointA->TopMeshElemSize) * MeshElem.MaxDiagonal;
+			} else {
+				if (curMeshSize > max(PointA->BottomMeshElemSize, PointA->TopMeshElemSize) )
+					curMeshSize = max(PointA->BottomMeshElemSize, PointA->TopMeshElemSize) ;
+			}
 		}
 		
 	}
 	if (curMeshSize < MeshElem.Size) {
-		if (SetMeshElemSize(curMeshSize) && !Modif)
-			Modif = true;
+		Modif += SetMeshElemSize(curMeshSize);
 	}
 	return Modif;
 }
 
-bool GeoPolygon::SetMeshElemSize(GeoPolygon *poly) {
-	bool Modif = false;
-	bool Inside = true;
-	GeoPolygon *Smallerpoly;
-	GeoPolygon *Biggerpoly;
+size_t GeoPolygon::SetMeshElemSize(GeoPolygon *poly) {
 	double Magnify = 10;
-	if (GDSPolygon::isPolygonInside(*poly)) {
-		Smallerpoly = poly;
-		Biggerpoly = this;
+	
+	return MinDistFromPoly(poly, Magnify) ;
+}
+
+bool GeoPolygon::SetPointMeshElemSize(double * PointAMeshElemSize, double PointBMeshElemSize, double dist, double distAB)
+{
+	double MeshElemSize = *PointAMeshElemSize;
+	if (dist < 1) {
+		dist = round2digit(dist);
+		if (*PointAMeshElemSize > PointBMeshElemSize) {
+			*PointAMeshElemSize = max(min(*PointAMeshElemSize, dist), PointBMeshElemSize);
 	}
-	else if (poly->GDSPolygon::isPolygonInside(*this)) {
-		Smallerpoly = this;
-		Biggerpoly = poly;
 	}
 	else {
-		if (this->GetBBox()->area() < poly->GetBBox()->area()) {
-			Smallerpoly = this;
-			Biggerpoly = poly;
+		double BMeshDistProd = PointBMeshElemSize*dist;
+		if (dist < 3 || PointBMeshElemSize < 1) {
+			if (*PointAMeshElemSize > BMeshDistProd) {
+				*PointAMeshElemSize = round2digit(max(BMeshDistProd, min(PointBMeshElemSize*distAB, *PointAMeshElemSize)));
+			}
+		} else {
+			if (*PointAMeshElemSize > BMeshDistProd / 3) {
+				*PointAMeshElemSize = round2digit(max(BMeshDistProd / 3, min(PointBMeshElemSize*distAB / 3, *PointAMeshElemSize)));
+			}
+		}
+	}
+	if (MeshElemSize > *PointAMeshElemSize) {
+		// Update Max
+		double Max = *PointAMeshElemSize;
+		for (size_t i = 0; i < _CoordMeshElemSize.size(); i++) {
+			if (_CoordMeshElemSize[i].TopMeshElemSize > Max) {
+				Max = _CoordMeshElemSize[i].TopMeshElemSize;
+			}
+			if (_CoordMeshElemSize[i].BottomMeshElemSize > Max) {
+				Max = _CoordMeshElemSize[i].BottomMeshElemSize;
+			}
+		}
+		MeshElem.Max = Max;
+		return true;
 		}
 		else {
-			Smallerpoly = poly;
-			Biggerpoly = this;
+		if (MeshElemSize < *PointAMeshElemSize) {
+			*PointAMeshElemSize = MeshElemSize;
 		}
-		Inside = false;
+		return false;
 	}
-	// Compare Area and if big difference estimate the distance from edge
-	assert(Smallerpoly->GetBBox()->area() <= Biggerpoly->GetBBox()->area());
-	if (false && Inside && Smallerpoly->GetBBox()->area() < Biggerpoly->GetBBox()->area() / 10) {
+	
+}
 
-		// estimate the distance between poly and "this"edges  
-		// Barycentre poly
-		Point2D polyCenter;
-		polyCenter = Point2D((Smallerpoly->GetBBox()->max.X - Smallerpoly->GetBBox()->min.X) / 2 + Smallerpoly->GetBBox()->min.X,
-			(Smallerpoly->GetBBox()->max.Y - Smallerpoly->GetBBox()->min.Y) / 2 + Smallerpoly->GetBBox()->min.Y);
+size_t GeoPolygon::SetPointMeshElemSize(CoordMeshElemSize * PointA, const CoordMeshElemSize PointB, double dist)
+{
+	size_t Modif = 0;
+	if(SetPointMeshElemSize(&PointA->TopMeshElemSize, PointB.TopMeshElemSize, dist, PointA->Coord.double_distance(PointB.Coord)))
+		Modif += 1;
+	if (SetPointMeshElemSize(&PointA->BottomMeshElemSize, PointB.BottomMeshElemSize, dist, PointA->Coord.double_distance(PointB.Coord)))
+		Modif += 1;
+	return Modif;
+	}
+
+size_t GeoPolygon::SetPointsMeshElemSize(double TopDownRatio) {
+	
+	size_t Modif = 0;
+	MeshElemSize curMesh = MeshElem;
 		size_t i, j;
-		double dist = Biggerpoly->GetBBox()->max.double_distance(Biggerpoly->GetBBox()->min);
+	for (i = 0; i < GetPoints(); i++) {
+		CoordMeshElemSize* A = &_CoordMeshElemSize[i];
+		for (j = 0; j < A->Neighbors.size(); j++) {
+			GeoPolygon *Neigh_poly = A->Neighbors[j].poly;
+			size_t index = A->Neighbors[j].index;
+			CoordMeshElemSize C = Neigh_poly->GetMeshCoords(index);
 
-		for (i = 0, j = Biggerpoly->GetPoints() - 1; i < Biggerpoly->GetPoints(); j = i++) {
-			Point2D A = Biggerpoly->GetCoords(i);
-			Point2D B = Biggerpoly->GetCoords(j);
-			if (A.Y == B.Y)
-				if ( A.X<polyCenter.X && polyCenter.X<B.X || B.X<polyCenter.X && polyCenter.X<A.X)
-					if (dist > fabs(A.Y - polyCenter.Y))
-						dist = fabs(A.Y - polyCenter.Y);
-			if (A.X == B.X)
-				if (A.Y<polyCenter.Y && polyCenter.Y<B.Y || B.Y<polyCenter.Y && polyCenter.Y<A.Y)
-					if (dist > fabs(A.X - polyCenter.X))
-						dist = fabs(A.X - polyCenter.X);
-			if (A.X != B.X && A.Y != B.Y)
-				if (dist > A.double_distance(polyCenter))
-					dist = A.double_distance(polyCenter);
-			if (dist < 1)
-				break;
+			// Same Poly
+			if (A->Neighbors[j].poly == this) {
+				continue;
 		}
-		if (dist <= 1) {
-			if (SetMeshElemSize(poly->GetMeshElemSize() * 1) && !Modif)
-				Modif = true;
+			Edge Edge_CD(C.Coord, Neigh_poly->GetMeshCoords(index+1).Coord);
+			Edge Edge_BC(Neigh_poly->GetMeshCoords(index - 1).Coord, C.Coord);
+			double distAC = min(Edge_CD.distance(A->Coord), Edge_BC.distance(A->Coord));
+			Edge Edge_AB(A->Coord, GetMeshCoords(i+1).Coord);
+			Edge Edge_ZA(GetMeshCoords(i-1).Coord, A->Coord);
+			double distCA = min(Edge_AB.distance(C.Coord), Edge_ZA.distance(C.Coord));
+			double dist = min(distAC, distCA);
+			// Same Layer
+			if (A->Neighbors[j].poly->GetLayer() == this->GetLayer()) {
+				Modif += SetPointMeshElemSize(A, C, dist);
+				continue;
 		}
-		else {
-			if (SetMeshElemSize(poly->GetMeshElemSize() *Magnify* dist) && !Modif)
-				Modif = true;
+			
+			bool Top = GetHeight() < A->Neighbors[j].poly->GetHeight();
+			bool edge = dist < A->Coord.double_distance(C.Coord);
+			Modif += SetPointMeshvsLayer(A, C, dist, Top, TopDownRatio, edge, &curMesh);
+			
+			if (curMesh.Size < MeshElem.Size)
+				Modif += SetMeshElemSize(curMesh.Size);
 		}
-	}
-	else {
-		if (MinDistFromPoly(poly, Magnify) && !Modif)
-			Modif = true;
 	}
 	return Modif;
+	}
+
+bool GeoPolygon::AddPointNeighbor(size_t index, GoePolyPoint Poly_P) {
+	if (index > _CoordMeshElemSize.size())
+		return false;
+	_CoordMeshElemSize[index].Neighbors.push_back(Poly_P);
+	return true;
 }
 
 double GeoPolygon::GetMeshElemSizeMin() {
@@ -1128,30 +1144,29 @@ double GeoPolygon::GetMeshElemSizeMin() {
 double GeoPolygon::GetMeshElemSize() {
 	return GetMeshElemSize(NULL);
 }
-double GeoPolygon::GetMeshElemSize(bool *Modif)
+double GeoPolygon::GetMeshElemSize(size_t *Modif)
 {
 	assert(MeshElem.Size != 0);
 	if (Modif != NULL) {
-		bool LocalModif = false;
+		size_t LocalModif = 0;
 		for (size_t i = 0; i < Holes.size(); i++) {
 			GeoPolygon* hole = Holes[i];
 			if (hole->GetMeshElemSize() < MeshElem.Size / MeshElem.MaxDiagonal) {
-				LocalModif = SetMeshElemSize(hole);
+				LocalModif += SetMeshElemSize(hole);
 			}
 
 		}
-		if (LocalModif) {
+		if (LocalModif>0) {
 			for (size_t i = 0; i < Holes.size(); i++) {
 				GeoPolygon* hole = Holes[i];
 				if (hole->GetMeshElemSize(Modif) > MeshElem.Size * MeshElem.MaxDiagonal) {
-					hole->SetMeshElemSize(this);
+					LocalModif += hole->SetMeshElemSize(this);
 				}
 
 			}
 
 		}
-		if (*Modif == false && LocalModif)
-			*Modif = true;
+		*Modif += LocalModif;
 	}
 
 	return MeshElem.Size;
@@ -1224,7 +1239,7 @@ string GeoPolygon::GetPointsAtZ(size_t cur_Point_Index, size_t cur_Line_Index, d
 
 string GeoPolygon::GetBottomGeo(size_t cur_Line_Index) {
 	string Geo;
-	double scaleFactor = 1;
+	//double scaleFactor = 1;
 
 	double z0 = int(rounded(GetHeight() / GetLayer()->Units->Unitu))* GetLayer()->Units->Unitu;
 	Geo = GetPointsAtZ(Point_Index, cur_Line_Index, z0, 1);
@@ -1253,7 +1268,7 @@ string GeoPolygon::GetBottomGeoTransfinite() {
 string GeoPolygon::Extrude(size_t &cur_Point_Index, size_t &cur_Line_Index) {
 	string EndGeo;
 	ProcessLayer *layer = GetLayer();
-	double scaleFactor = 1;
+	//double scaleFactor = 1;
 
 	if (hole)
 		EndGeo += "\n// Start Poly Extrude " + GetExtrudeVar() + " Dielec-" + layer->Name + "\n";

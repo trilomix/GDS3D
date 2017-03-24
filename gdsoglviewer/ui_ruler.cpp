@@ -66,7 +66,7 @@ UIRuler::Draw()
 	//glLoadIdentity();
 	float length = 0.0;
 	float extension = 50.0;
-	float rulerz;
+	float rulerz=0;
 	if (layer) {
 		//rulerz = (layer->Height + layer->Height*1.5f*exploded_fraction + layer->Thickness) / 1000.0f;
 		rulerz = (layer->Height + layer->Height*1.5f*exploded_fraction + layer->Thickness) * layer->Units->Unitu;
@@ -165,6 +165,7 @@ UIRuler::Draw()
 		wm->getWorld()->gl_square(wm->screenWidth - 300.0f, wm->screenHeight - 90.0f, wm->screenWidth - 20.0f, wm->screenHeight - 160.0f, 0);
         
 		// Text
+        if(layer){
 		if(length > 0.0)
 		{
 			if(length<1.0)
@@ -176,6 +177,7 @@ UIRuler::Draw()
 		{
 			wm->getWorld()->gl_printf(1.0f, 1.0f, 1.0f, 0.4f, wm->screenWidth - 280, wm->screenHeight - 110, "Ruler(%s): ",layer->Name);
 		}
+        }
 		wm->getWorld()->gl_printf(1.0f, 1.0f, 1.0f, 0.4f, wm->screenWidth - 280, wm->screenHeight - 130, "Left-Click on Plane");
 		wm->getWorld()->gl_printf(1.0f, 1.0f, 1.0f, 0.4f, wm->screenWidth - 280, wm->screenHeight - 150, "CTRL-Scroll: Change Layer");
 
@@ -190,7 +192,7 @@ UIRuler::Draw()
 bool
 UIRuler::Event(int event, int data, int xpos, int ypos , bool shift, bool control, bool alt)
 {
-    float ray_x;
+    float ray_x=0;
 	float ray_y;
 	float ray_z;
 	ProcessLayer *layer = wm->getProcess()->GetLayer(rulerlayer, rulerdatatype, wm->getProcess()->GetCurrentProcess());

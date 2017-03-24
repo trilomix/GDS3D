@@ -25,6 +25,8 @@
 #include "gdsobject.h"
 #include "gdspolygon.h"
 #include "../math/Maths.h"
+//#include "clipper/clipper.hpp"
+using namespace ClipperLib;
 
 #ifndef M_PI
 	#define M_PI 3.14159265358979323846
@@ -216,6 +218,17 @@ bool GDSBB::intersect(const GDSBB& BB1, const GDSBB& BB2)
 			return false;
 	if( (BB1.min.Y - BB2.max.Y) > 0.001f || (BB2.min.Y-BB1.max.Y) > 0.001f )
 			return false;
+
+	return true;
+}
+
+bool GDSBB::intersect_wborders(const GDSBB& BB1, const GDSBB& BB2)
+{
+	// How much of a margin??
+	if ((BB1.min.X - BB2.max.X) > 0.000f || (BB2.min.X - BB1.max.X) > 0.000f)
+		return false;
+	if ((BB1.min.Y - BB2.max.Y) > 0.000f || (BB2.min.Y - BB1.max.Y) > 0.000f)
+		return false;
 
 	return true;
 }
@@ -514,6 +527,17 @@ GDSPolygon::GDSPolygon(double Height, double Thickness, struct ProcessLayer *Lay
 	SetNetName((char*)"None");
 }
 
+GDSPolygon::GDSPolygon(struct ProcessLayer *Layer)
+{
+	_Height = Layer->Height*Layer->Units->Unitu;
+	_Thickness = Layer->Thickness*Layer->Units->Unitu;
+	_Layer = Layer;
+
+	epsilon = 0.001; // Default precision of 1nm
+	_NetName = NULL;
+	SetNetName((char*)"None");
+}
+
 GDSPolygon::~GDSPolygon()
 {
 }
@@ -595,6 +619,11 @@ GDSPolygon::CopyInto(GDSPolygon *p)
 				AlignPointsIndex.push_back(j);
 				break;
 			}
+			else if ((A.Y == B.Y && A.Y == C.Y) || (A.X == B.X && A.X == C.X)) {
+				// A B C align but B not inside A C
+				AlignPointsIndex.push_back(j);
+				break;
+			}
 			k = j;
 			j = i;
 		}
@@ -634,6 +663,9 @@ bool GDSPolygon::FindCoord(Point2D P) {
 void
 GDSPolygon::AddPoint(Point2D P)
 {
+	/*if (_Coords.size() > 0) { 
+		assert(_Coords[_Coords.size() - 1].X == P.X || _Coords[_Coords.size() - 1].Y == P.Y); 
+	}*/
 	GDSPolygon::AddPoint(P.X, P.Y);
 }
 void 
@@ -642,7 +674,6 @@ GDSPolygon::AddPoint(double X, double Y)
 
 	_Coords.push_back(Point2D(X,Y));
 	bbox.addPoint(Point2D(X,Y));
-	
 	// For 3D bbox
 	double Zmin, Zmax;
 	Zmin = _Height;
@@ -940,6 +971,10 @@ GDSPolygon::isPointInside(const Point2D& P)
 	bool c = false;
 
 	for (i = 0, j = _Coords.size() - 1; i < _Coords.size(); j = i++) {
+		if (onLine(_Coords[i], _Coords[j], P)) {
+			c = false;
+			break;
+		}
 		if (((_Coords[i].Y > P.Y) != (_Coords[j].Y > P.Y)) &&
 			(P.X < (_Coords[j].X - _Coords[i].X) * (P.Y - _Coords[i].Y) / (_Coords[j].Y - _Coords[i].Y) + _Coords[i].X))
 			c = !c;
@@ -980,6 +1015,92 @@ GDSPolygon::isPointInside_wborders(const Point2D& P)
 }
 
 bool
+GDSPolygon::isEdgeInside_wborders(const Edge& E)
+{
+	size_t i, j, k, l;
+	bool c = false;
+
+	Point2D P = E.GetA();
+	Point2D P1 = E.GetB();
+	set<size_t> IntesectEdgeList;
+	for (i = 0, j = _Coords.size() - 1; i < _Coords.size() - 1; j = i++) {
+		for (k = i + 1, l = i; k < _Coords.size(); l = k++) {
+			if (_Coords[i] == _Coords[k]) {
+				IntesectEdgeList.insert(i + 1);
+				IntesectEdgeList.insert(k);
+				break;
+			}
+			if (_Coords[l].IsonLine(_Coords[i], _Coords[j]) && _Coords[k].IsonLine(_Coords[i], _Coords[j])) {
+				IntesectEdgeList.insert(k);
+			}
+			if (_Coords[i].IsonLine(_Coords[k], _Coords[l]) && _Coords[j].IsonLine(_Coords[k], _Coords[l])) {
+				IntesectEdgeList.insert(i);
+			}
+		}
+	}
+	for (i = 0, j = _Coords.size() - 1; i < _Coords.size(); j = i++) {
+		if (((_Coords[i].Y > P.Y) != (_Coords[j].Y > P.Y)) &&
+			(P.X < (_Coords[j].X - _Coords[i].X) * (P.Y - _Coords[i].Y) / (_Coords[j].Y - _Coords[i].Y) + _Coords[i].X))
+			c = !c;
+		
+		if (IntesectEdgeList.find(i) != IntesectEdgeList.end()){
+			if (onLine(_Coords[i], _Coords[j], P)) {
+				if (isPointInside_wborders(P1)) {
+					c = true;
+					break;
+				}
+			}
+			continue;
+		}
+		if (onLine(_Coords[i], _Coords[j], P)) {
+			if (isPointInside_wborders(P1)) {
+				Edge curEdge;
+				curEdge = Edge(_Coords[j], _Coords[i]);
+				if (fabs(fabs((E.direction() - curEdge.direction())) - M_PI) < 0.01) {
+					// opposit direction
+					c = false;
+					break;
+				} else if(fabs((E.direction() - curEdge.direction()))  < 0.01 
+					&& !isPointInside(P1)
+					&& !onLine(_Coords[i], _Coords[j], P1)
+					) {
+					// Same direction but Edge longer than current
+					// _Coords[i] is the first point on the line P P1 who will be out of poly
+					Point2D Pepsilon(_Layer->Units->Unitu*cos(E.direction()), _Layer->Units->Unitu*sin(E.direction()));
+					if (!isPointInside_wborders(_Coords[i] + (Pepsilon * 1.5))) {
+						c = false;
+							break;
+					}
+					else {
+						c = true;
+						break;
+					}
+				} else if (fabs(fabs((E.direction() - curEdge.direction()))- M_PI/2) < 0.01) {
+					// Perpendicular So look for interserction
+					if (intersect_woborder(E)) {
+						c = false;
+						break;
+					} else {
+						c = true;
+						break;
+					}
+				} else {
+					c = true;
+					break;
+				}
+			} else {
+				c = false;
+				break;
+			}
+			
+		}
+	}
+
+	return c;
+
+}
+
+bool
 GDSPolygon::isPolygonInside(const GDSPolygon& poly) {
 	// Check if the "poly" is inside "this"
 	if (this->bbox.isBBInside(poly.bbox)) {
@@ -1003,9 +1124,46 @@ GDSPolygon::isPolygonInside_wborders(const GDSPolygon& poly) {
 	//if (this->bbox.isBBInside_wborders(poly.bbox)) {
 	if (this->bbox.isBBInside(poly.bbox)) {
 			//Check all poly point
-		for (unsigned int i = 0; i<poly._Coords.size(); i++)
+		size_t i, j, k, l;
+		set<size_t> IntesectEdgeList;
+		/*for (i = 0; i < poly._Coords.size() - 1; i++) {
+			for (j = i + 1; j < poly._Coords.size(); j++) {
+				if (poly._Coords[i] == poly._Coords[j]) {
+					IntesectPtList.insert(poly._Coords[i]);
+					i = j;
+					j = poly._Coords.size();
+				}
+			}
+		}*/
+		for (i = 0, j = poly._Coords.size() - 1; i < poly._Coords.size() - 1; j = i++) {
+			for (k = i + 1, l = i; k < poly._Coords.size(); l = k++) {
+				if (poly._Coords[i] == poly._Coords[k]) {
+					IntesectEdgeList.insert(i + 1);
+					IntesectEdgeList.insert(k);
+					break;
+				}
+				Point2D A = poly._Coords[i];
+				Point2D B = poly._Coords[j];
+				Point2D C = poly._Coords[l];
+				Point2D D = poly._Coords[k];
+				if (A.IsonLine(poly._Coords[k], poly._Coords[l]) && B.IsonLine(poly._Coords[k], poly._Coords[l])) {
+					IntesectEdgeList.insert(i);
+				}
+				if (C.IsonLine(poly._Coords[i], poly._Coords[j]) && D.IsonLine(poly._Coords[i], poly._Coords[j])) {
+					IntesectEdgeList.insert(k);
+				}
+			}
+		}
+		
+		for ( i = 0, j = poly._Coords.size() - 1; i < poly._Coords.size(); j = i++)
 		{
-			if (!isPointInside_wborders(poly._Coords[i])) {
+			if (IntesectEdgeList.find(i) != IntesectEdgeList.end()) {
+				continue;
+			}
+			Edge E;
+			E = Edge(poly._Coords[j], poly._Coords[i]);
+			
+			if (!isEdgeInside_wborders(E)) {
 				return false;
 			}
 		}
@@ -1101,8 +1259,6 @@ void GDSPolygon::FollowFrameAgain(GDSPolygon *poly, GDSPolygon *Mergepoly) {
 			}
 		}
 
-		//if (poly->isPointInside_wborders(P1) || (intersect(poly, P0, P1) && !poly->isPointInside_wborders(P0))) {
-		
 		if ( poly->isPointInside_wborders(P1) 
 			|| (!poly->isPointInside_wborders(P0) && !poly->isPointInside_wborders(P1) 
 				&& intersect(poly, P0, P1) 
@@ -1111,19 +1267,10 @@ void GDSPolygon::FollowFrameAgain(GDSPolygon *poly, GDSPolygon *Mergepoly) {
 				   || Mergepoly->_Coords.size() == 0
 				   )
 				)
-			/*|| (!poly->isPointInside_wborders(P0) && intersect(poly, P0, P1) )  isPointInside can lead to error*/
-//			|| (LastpointInsideIndex != _FrameCurrentIndex-1 && intersect(poly, P0, P1))
 			|| (((Mergepoly->_Coords.size() == 0 && false)
 				   || Mergepoly->_Coords.size() > 0 && Mergepoly->_Coords[Mergepoly->_Coords.size() - 1] != *IntersectPoint) 
 				&& intersect(poly, P0, P1) && poly->isPointInside_wborders(P1))
-			//|| intersect(poly, P0, P1) && (Mergepoly->_Coords.size()>0 && !(*IntersectPoint == Mergepoly->_Coords[Mergepoly->_Coords.size() - 1])) 
 			) {
-		//if (poly->isPointInside_wborders(P1) || (!poly->isPointInside_wborders(P0) && intersect(poly, P0, P1) && (Mergepoly->_Coords.size()>0 && !(*IntersectPoint == Mergepoly->_Coords[Mergepoly->_Coords.size() - 1])))) {
-				// We cross "other" poly
-			// P1 is inside poly and P0 is outside
-			// The Line P0 P1 cross poly and P0 is outside poly
-			// The Line P0 P1 cross poly and the last point was intersection between Line P0 P1 and Line P3 P4
-
 			if (!poly->_FrameCurrentIndexSet) {
 				// Parcours du polynome pour trouver le segment le plus proche 
 				double dmin = -1;
@@ -1163,6 +1310,7 @@ void GDSPolygon::FollowFrameAgain(GDSPolygon *poly, GDSPolygon *Mergepoly) {
 			}
 			else {
 				PolyFrameSartIndex = poly->_FrameStartIndex;
+				//FirstCheck = false;
 			}
 			for (unsigned int j = poly->_FrameCurrentIndex; j < poly->_Coords.size() + PolyFrameSartIndex + 1; j++) {
 				P3 = poly->_Coords[index(j - 1, Polysign, PolySize)];
@@ -1242,6 +1390,155 @@ void GDSPolygon::FollowFrameAgain(GDSPolygon *poly, GDSPolygon *Mergepoly) {
 	}
 	// End Frame
 	_FrameCurrentIndex = this->_Coords.size() + _FrameStartIndex;
+    delete IntersectPoint;
+}
+
+void GDSPolygon::MergePoly_wClipper(GDSPolygon *poly, GDSPolygon *Mergepoly) {
+	Clipper c;
+	Paths p_this, p1, res;
+	Path p, p2;
+	p.resize(this->_Coords.size());
+	for (size_t i = 0; i < this->_Coords.size(); i++) {
+		p[i].X = rounded(this->GetXCoords(i) / _Layer->Units->Unitu);
+		p[i].Y = rounded(this->GetYCoords(i) / _Layer->Units->Unitu);
+	}
+	p_this.resize(1);
+	p_this[0] = p;
+
+	p2.resize(poly->_Coords.size());
+	for (size_t i = 0; i < poly->_Coords.size(); i++) {
+		p2[i].X = rounded(poly->GetXCoords(i) / _Layer->Units->Unitu);
+		p2[i].Y = rounded(poly->GetYCoords(i) / _Layer->Units->Unitu);
+	}
+	p1.resize(1);
+	p1[0]=p2;
+
+	c.AddPaths(p_this, ptSubject, true);
+	c.AddPaths(p1, ptClip, true);
+
+	c.Execute(ctUnion, res, pftNonZero, pftNonZero);
+	//pftEvenOdd, pftNonZero, pftPositive, pftNegative
+	Point2D LastPoint;
+	bool CoutourFound = false;
+	for (size_t i = 0; i < res.size(); i++) {
+		p = res[i];
+		if (Orientation(p)) {
+			assert(!CoutourFound);
+			
+			// Contour found
+			CoutourFound = true;
+			Point2D AddPoint;
+			Point2D NewPoint = Point2D(p[0].X, p[0].Y) * _Layer->Units->Unitu;
+			size_t StartIndex = 0;
+			int sign = 1;
+			for (size_t j = 0; j < p.size(); j++) {
+				AddPoint = Point2D(p[j].X, p[j].Y) * _Layer->Units->Unitu;
+				if (AddPoint > NewPoint) {
+					NewPoint = AddPoint;
+					StartIndex = j;
+				}
+			}
+			for (size_t j = 0; j < p.size(); j++) {
+				if (j + (StartIndex*sign) > p.size() - 1) {
+					StartIndex = j;
+					sign = -1;
+				}
+				LastPoint = Point2D(p[j + (StartIndex*sign)].X, p[j + (StartIndex*sign)].Y) * _Layer->Units->Unitu;
+				Mergepoly->AddPoint(LastPoint);
+			}
+		}
+		else {
+			assert((i < res.size() - 1) || Mergepoly->GetPoints() > 0);
+		}
+	}
+	assert(Mergepoly->isPolygonInside_wborders(*poly) && Mergepoly->isPolygonInside_wborders(*this));
+	
+	Point2D FirstPoint= Mergepoly->GetCoords(0);
+	for (size_t i = 0; i < res.size(); i++) {
+		p = res[i];
+		if (!Orientation(p)) {
+			// Hole found
+			Point2D AddPoint;
+			Point2D StartPoint = Point2D(p[0].X, p[0].Y) * _Layer->Units->Unitu;
+			size_t StartIndex = 0;
+			int sign = 1;
+			GDSPolygon poly= GDSPolygon(*Mergepoly);
+			poly.Clear();
+			
+			// Found the start hole point ( max X or max Y)
+			for (size_t j = 1; j < p.size(); j++) {
+				AddPoint = Point2D(p[j].X, p[j].Y) * _Layer->Units->Unitu;
+				if (AddPoint > StartPoint) {
+					StartPoint = AddPoint;
+					StartIndex = j;
+				}
+			}
+			// Find the closest edge to point
+			size_t j, k;
+			size_t EdgeIndex=0;
+			Point2D MidPoint ;
+			if (StartIndex != 0 ) { 
+				MidPoint = (StartPoint + Point2D(p[StartIndex - 1].X, p[StartIndex - 1].Y) * _Layer->Units->Unitu) / 2;
+			} else {
+				MidPoint = (StartPoint + Point2D(p[p.size()-1].X, p[p.size() - 1].Y) * _Layer->Units->Unitu) / 2;
+			}
+			assert(MidPoint.Y == StartPoint.Y);
+			double dist = -1;
+			
+			for ( j = 0, k= Mergepoly->GetPoints()-1; j < Mergepoly->GetPoints(); k=j++) {
+				Edge CurEdge = Edge(Mergepoly->GetCoords(k), Mergepoly->GetCoords(j));
+				if ((dist >= CurEdge.distance(StartPoint) || dist <0)
+					&& (   (StartPoint.X <= Mergepoly->GetCoords(j).X && StartPoint.X >= Mergepoly->GetCoords(k).X)
+						|| (StartPoint.X >= Mergepoly->GetCoords(j).X && StartPoint.X <= Mergepoly->GetCoords(k).X)
+						|| (StartPoint.Y <= Mergepoly->GetCoords(j).Y && StartPoint.Y >= Mergepoly->GetCoords(k).Y)
+						|| (StartPoint.Y >= Mergepoly->GetCoords(j).Y && StartPoint.Y <= Mergepoly->GetCoords(k).Y)
+						)
+					) {
+					dist = CurEdge.distance(StartPoint);
+					EdgeIndex = k;
+					//dist = CurEdge.distance(StartPoint);
+				}
+			}
+			assert(dist >= 0);
+			FirstPoint = Mergepoly->GetCoords(EdgeIndex);
+			if (EdgeIndex < Mergepoly->GetPoints() - 1) {
+				LastPoint = Mergepoly->GetCoords(EdgeIndex + 1); 
+			} else {
+				LastPoint = Mergepoly->GetCoords(0);
+			}
+			//assert(FirstPoint.Y == LastPoint.Y);
+			if (FirstPoint.X == LastPoint.X) {
+				AddPoint = Point2D(FirstPoint.X, StartPoint.Y);
+			}
+			else if (FirstPoint.Y == LastPoint.Y) {
+				AddPoint = Point2D(StartPoint.X, FirstPoint.Y);
+			}
+			else {
+				assert(AddPoint == AddPoint);
+			}
+			
+			for (size_t j = 0; j <= EdgeIndex; j++) {
+				poly.AddPoint(Mergepoly->GetCoords(j));
+			}
+
+			poly.AddPoint(AddPoint);
+			poly.AddPoint(StartPoint);
+			for (size_t j = 1; j < p.size(); j++) {
+				if (j + (StartIndex*sign) > p.size() - 1) {
+					StartIndex = j;
+					sign = -1;
+				}
+				poly.AddPoint(p[j+(StartIndex*sign)].X * _Layer->Units->Unitu, p[j+ (StartIndex*sign)].Y * _Layer->Units->Unitu);
+			}
+			poly.AddPoint(StartPoint);
+			poly.AddPoint(AddPoint);
+			for (size_t j = EdgeIndex+1; j < Mergepoly->GetPoints(); j++) {
+				poly.AddPoint(Mergepoly->GetCoords(j));
+			}
+			poly.CopyInto(Mergepoly);
+		}
+	}
+	
 }
 
 void
@@ -1259,13 +1556,15 @@ GDSPolygon::Merge(GDSPolygon *poly) {
 	poly->_FrameCurrentIndexSet = false;
 	poly->_FrameStartIndex = NULL;
 	poly->_FrameCurrentIndex = NULL;
-	if (bbox.isBBInside(poly->bbox)) {
+	/*if (bbox.isBBInside(poly->bbox)) {
 		FollowFrameAgain(poly, Mergepoly);
 	} else {
 		poly->FollowFrameAgain(this, Mergepoly);
-	}
+	}*/
+	MergePoly_wClipper(poly, Mergepoly);
 	//Mergepoly->SelfIntersect();
 	//Mergepoly->Tesselate();
+	assert(Mergepoly->isPolygonInside_wborders(*poly) && Mergepoly->isPolygonInside_wborders(*this));
 	assert(Mergepoly->isPolygonInside_wborders(*poly) && Mergepoly->isPolygonInside_wborders(*this));
 	Mergepoly->CopyInto(this);
 	this->Tesselate(true /*force*/);
@@ -1321,6 +1620,56 @@ GDSPolygon::intersect(GDSPolygon *Poly, const Point2D& A, const Point2D& B ) {
 }
 
 bool 
+GDSPolygon::intersect(const Edge& E) {
+	Edge CurEdge;
+
+	for (unsigned int j = 0; j <_Coords.size(); j++) {
+		CurEdge = Edge(_Coords[j%_Coords.size()],
+			_Coords[(j + 1) % _Coords.size()]);
+		if (CurEdge.intersection(E, NULL)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool
+GDSPolygon::intersect_woborder(const Edge& E) {
+	Edge CurEdge;
+	
+	size_t i, j, k, l;
+	set<size_t> IntesectEdgeList;
+	
+	for (i = 0, j = _Coords.size() - 1; i < _Coords.size() - 1; j = i++) {
+		for (k = i + 1, l = i; k < _Coords.size(); l = k++) {
+			if (_Coords[i] == _Coords[k]) {
+				IntesectEdgeList.insert(i + 1);
+				IntesectEdgeList.insert(k);
+				break;
+			}
+			if (_Coords[l].IsonLine(_Coords[i], _Coords[j]) && _Coords[k].IsonLine(_Coords[i], _Coords[j])) {
+				IntesectEdgeList.insert(k);
+			}
+			if (_Coords[i].IsonLine(_Coords[k], _Coords[l]) && _Coords[j].IsonLine(_Coords[k], _Coords[l])) {
+				IntesectEdgeList.insert(i);
+			}
+		}
+	}
+	for (i = 0, j = _Coords.size() - 1; i < _Coords.size() - 1; j = i++) {
+		
+		if (IntesectEdgeList.find(i) != IntesectEdgeList.end()) {
+			continue;
+		}
+		
+		CurEdge = Edge(_Coords[j], _Coords[i]);
+		if (CurEdge.intersection_woborder(E, NULL)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool
 GDSPolygon::onLine(const Point2D& A, const Point2D& B,const Point2D& P)
 {
 	// Check if a point lies on a line segment
@@ -1402,7 +1751,7 @@ void GDSPolygon::transformPoints(const GDSMat& M)
 	bbox.clear();
 	bbox3D.clear();
 
-	for(unsigned int i=0;i<_Coords.size();i++)
+	for(size_t i=0;i<_Coords.size();i++)
 	{
 		_Coords[i] = M * _Coords[i];
 		bbox.addPoint(_Coords[i]);
@@ -1423,15 +1772,26 @@ bool GDSPolygon::intersect(GDSPolygon *P1, GDSPolygon *P2)
 	if(!GDSBB::intersect(P1->bbox, P2->bbox))
 		return false;
 
+	// Bounding intersection
+	for (size_t i = 0; i < P1->GetPoints(); i++)
+	{
+		for (size_t j = 0; j < P2->GetPoints(); j++)
+		{
+			if (P1->GetCoords(i) == P2->GetCoords(j)) { 
+				return true;;
+			}
+		}
+	}
+
 	//We are doing this brute force
-	for(unsigned int i=0;i<P1->indices.size()/3;i++)
+	for(size_t i=0;i<P1->indices.size()/3;i++)
 	{
 		if (P1->indices[i * 3 + 1] >= P1->_Coords.size()) {
 			P1->Tesselate(true /*force*/);
 			i = 0;
 		}
 		T1.set(P1->_Coords[P1->indices[i * 3 + 0]], P1->_Coords[P1->indices[i * 3 + 1]], P1->_Coords[P1->indices[i * 3 + 2]]);
-		for(unsigned int j=0;j<P2->indices.size()/3;j++)
+		for(size_t j=0;j<P2->indices.size()/3;j++)
 		{
 			
 			if (P2->indices[j * 3 + 1] >= P2->_Coords.size()) {

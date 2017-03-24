@@ -43,7 +43,8 @@ public:
 	void Clear();
 	void Add(vector<GDSPolygon*> polyList);
 	void Add(GDSPolygon* poly);
-	void Remove(GDSPolygon* poly);
+	bool Remove(GDSPolygon* poly);
+	bool Update(GDSPolygon * poly);
 	vector<GDSPolygon*> Get();
 	GDSBB GetBB();
 	size_t size();
@@ -59,8 +60,11 @@ private:
 	map < GDSBB, PolySpace> PolyBySpace;
 public:
 	void Add(vector<GDSPolygon*> polyList);
-	void Add(GDSPolygon* poly);
-	void Remove(GDSPolygon* poly);
+	bool Add(GDSPolygon* poly);
+	map<GDSBB, PolySpace>::iterator Find(GDSPolygon * poly);
+	bool Remove(GDSPolygon* poly);
+	bool Remove(GDSPolygon * poly, GDSBB polyBBox);
+	bool Update(GDSPolygon * poly, GDSBB prevBB);
 	vector<GDSPolygon*> Get();
 	vector<GDSPolygon*> GetPolyInside(GDSBB BBox);
 	vector<GDSPolygon*> GetPolyNear(GDSBB BBox);

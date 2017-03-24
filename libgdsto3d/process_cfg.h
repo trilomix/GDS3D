@@ -46,6 +46,7 @@ struct ProcessLayer{
 	float Blue;
 	float Filter;
 	int Metal;
+	double MinSpace;
 	int Index;
 	int LegendIndex;
 	bool Alt;

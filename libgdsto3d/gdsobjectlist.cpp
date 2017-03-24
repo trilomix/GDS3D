@@ -19,6 +19,7 @@
 //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 #include "gdsobjectlist.h"
+#include <algorithm>
 
 // ObjectTree Class
 ObjectTree::ObjectTree(GDSObject *object, const GDSMat& mat)
@@ -75,8 +76,11 @@ GDSObject *GDSObjectList::SearchObject(const char *Name, const char *gdsName)
 		GDSName[strlen(objects[i]->GetName())] = '\0';
 		if(gdsName == NULL && objects[i]->GetGDSName()!= NULL 
 			&& strcmp(Name, objects[i]->GetGDSName()) == 0 
-			&& strcmp(GDSName, objects[i]->GetName()) == 0)
+           && strcmp(GDSName, objects[i]->GetName()) == 0) {
+            //delete GDSName;
 			return objects[i];
+		}
+        // delete GDSName;
 	}
 
 	return NULL;

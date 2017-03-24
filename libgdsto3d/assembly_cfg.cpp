@@ -232,18 +232,20 @@ void GDSAssembly::ParseFile(char *assemblyfile)
 					strCleanUp(inner_assemblyfile);
 					Assembly = new GDSAssembly();
 					Assembly->ParseFile(inner_assemblyfile);
-					delete[] inner_assemblyfile;
+					
 					if (!Assembly) {
 						v_printf(-1, "Error: Out of memory.\n");
 						PareseFileError(NewGDS);
+						delete[] inner_assemblyfile;
 						return;
 					}
 					else if (!Assembly->IsValid()) {
 						v_printf(-1, "Error: %s is not a valid assembly file\n", inner_assemblyfile);
 						PareseFileError(NewGDS);
+						delete[] inner_assemblyfile;
 						return;
 					}
-
+                    delete[] inner_assemblyfile;
 					got_assemblyfile = true;
 				}
 			}else if(strstr(line, "GDS_File:")){
@@ -465,6 +467,9 @@ struct GDS *GDSAssembly::GetGDS(const char *Name)
 
 	while(gds){
 		if(strcmp(Name, gds->Name) == 0){
+			return gds;
+		}
+		if (strcmp(Name, remove_extension(getfilename(gds->gdsfile))) == 0) {
 			return gds;
 		}
 		gds = gds->Next;

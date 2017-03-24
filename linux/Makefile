@@ -16,10 +16,11 @@ else
 endif
 
 # Include all sources in the folders
-SOURCES=$(wildcard *.cpp) $(wildcard ../math/*.cpp) $(wildcard ../gdsoglviewer/*.cpp) $(wildcard ../libgdsto3d/*.cpp) 
-HEADERS=$(wildcard *.h) $(wildcard ../math/*.h) $(wildcard ../gdsoglviewer/*.h) $(wildcard ../libgdsto3d/*.h) 
+SOURCES=$(wildcard *.cpp) $(wildcard ../math/*.cpp) $(wildcard ../gdsoglviewer/*.cpp) $(wildcard ../libgdsto3d/*.cpp)  $(wildcard ../libgdsto3d/clipper/*.cpp) $(wildcard ../libgdsto3d/voro++/src/voro++.cc) 
+HEADERS=$(wildcard *.h) $(wildcard ../math/*.h) $(wildcard ../gdsoglviewer/*.h) $(wildcard ../libgdsto3d/*.h) $(wildcard ../libgdsto3d/clipper/*.h) $(wildcard ../libgdsto3d/voro++/src/*.h) 
 
-OBJECTS=$(SOURCES:.cpp=.o)
+TMP_OBJECTS=$(SOURCES:.cc=.o)
+OBJECTS=$(TMP_OBJECTS:.cpp=.o)
 EXECUTABLE=./GDS3D
 
 all: $(SOURCES) $(HEADERS) $(EXECUTABLE)

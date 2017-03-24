@@ -24,6 +24,7 @@
 #include "gds_globals.h"
 #include "process_cfg.h"
 #include <math.h>
+#include "clipper/clipper.hpp"
 
 // All these types are 2D
 class GDSMat
@@ -130,9 +131,11 @@ public:
 	bool isBBInside_wborders(const GDSBB & BB);
 
 	static bool intersect(const GDSBB& BB1, const GDSBB& BB2);
+	bool intersect_wborders(const GDSBB & BB1, const GDSBB & BB2);
 	//static bool intersect(const GDSBB& BB1, const GDS3DBB& BB2);
 	bool operator<(const GDSBB & BB) const;
 	bool operator==(const GDSBB & BB)const;
+	bool operator!=(const GDSBB & BB) const;
 	GDSBB operator*(const GDSMat & M) const;
 };
 
@@ -149,6 +152,13 @@ inline bool GDSBB::operator<(const GDSBB & BB) const
 inline bool GDSBB::operator==(const GDSBB & BB) const
 {
 	if (this->max == BB.max && this->min == BB.min) {
+		return true;
+	}
+	return false;
+}
+inline bool GDSBB::operator!=(const GDSBB & BB) const
+{
+	if (this->max != BB.max || this->min != BB.min) {
 		return true;
 	}
 	return false;
@@ -245,12 +255,15 @@ private:
 	double epsilon;
 	double area(const Point2D& A, const Point2D& B, const Point2D& C);
 	bool intersect(GDSPolygon * Poly, const Point2D & A, const Point2D & B);
+	bool intersect_woborder(const Edge & E);
+	bool intersect(const Edge & E);
 	bool onLine(const Point2D& A, const Point2D& B, const Point2D& P);
     bool insideTriangle(const Point2D& A, const Point2D& B, const Point2D& C,const Point2D& P);
 
 public:
         GDSPolygon() {_Layer = NULL; _NetName = NULL;};
 	GDSPolygon(double Height, double Thickness, struct ProcessLayer *Layer);
+	GDSPolygon(ProcessLayer * Layer);
 	~GDSPolygon();
 
     void Clear();
@@ -287,11 +300,15 @@ public:
 
 	bool isPointInside_wborders(const Point2D & P);
 
+	bool isEdgeInside_wborders(const Edge & E);
+
 	bool isPolygonInside(const GDSPolygon & poly);
 
 	bool isPolygonInside_wborders(const GDSPolygon & poly);
 
 	void FollowFrameAgain(GDSPolygon * poly, GDSPolygon * Mergepoly);
+
+	void MergePoly_wClipper(GDSPolygon * poly, GDSPolygon * Mergepoly);
 
 	void Merge(GDSPolygon * poly);
 

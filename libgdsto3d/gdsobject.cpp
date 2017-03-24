@@ -1224,11 +1224,13 @@ void PolySpace::Add(GDSPolygon * poly)
 	cur_size += 1;
 }
 
-void PolySpace::Remove(GDSPolygon * poly)
+bool PolySpace::Remove(GDSPolygon * poly)
 {
 	vector<GDSPolygon*>::iterator it = std::find(polys.begin(), polys.end(), poly);
-	if (it != polys.end())
+	if (it != polys.end()) {
 		polys.erase(it);
+	} else
+		return false;
 	//polys.erase(std::remove(polys.begin(), polys.end(), poly), polys.end());
 	if (polys.size() < (cur_size - 100)) {
 		BBox.clear();
@@ -1238,6 +1240,17 @@ void PolySpace::Remove(GDSPolygon * poly)
 		}
 		cur_size = polys.size();
 	}
+	return true;
+}
+bool PolySpace::Update(GDSPolygon * poly) {
+	bool res = Remove(poly);
+	if (res) {
+		cur_size -= 1;
+		Add(poly);
+	} else {
+		return false;
+	}
+	return true;
 }
 
 vector<GDSPolygon*> PolySpace::Get()
@@ -1269,47 +1282,105 @@ void PolygonSort::Add(vector<GDSPolygon *> polyList)
 	polys.Add(polyList); 
 }
 
-void PolygonSort::Add(GDSPolygon * poly)
+bool PolygonSort::Add(GDSPolygon * poly)
 {
 	// Add to Full List
 	polys.Add(poly);
 	// Try to add to one of the current BBox
+	bool AddDone = false;
+	PolySpace PolyArea;
+	GDSBB cur_BB;
 	for (map<GDSBB, PolySpace>::iterator BB_it = PolyBySpace.begin(); BB_it != PolyBySpace.end(); BB_it++) {
-		GDSBB cur_BB = BB_it->first;
+		cur_BB = BB_it->first;
 		if (cur_BB.isBBInside_wborders(*poly->GetBBox())) {
 			BB_it->second.Add(poly);
+			if (cur_BB != BB_it->second.GetBB()) {
+				PolyArea = BB_it->second;
+			}
+			AddDone = true;
 			break;
 		}
 	}
+	if (AddDone && cur_BB != PolyArea.GetBB()) {
+		PolyBySpace.erase(cur_BB);
+		PolyBySpace[PolyArea.GetBB()] = PolyArea;
+	}
+
+	return AddDone;
 
 }
 
-void PolygonSort::Remove(GDSPolygon * poly)
-{
+map<GDSBB, PolySpace>::iterator PolygonSort::Find(GDSPolygon *poly){
 	vector<GDSPolygon*> polyList;
-	vector<GDSBB> BBSpaceremoveList;
-
-	for (map<GDSBB, PolySpace>::iterator BB_it = PolyBySpace.begin(); BB_it != PolyBySpace.end(); ++BB_it) {
+	map<GDSBB, PolySpace>::iterator BB_it = PolyBySpace.end();
+	size_t i = 0;
+	for (BB_it = PolyBySpace.begin(); BB_it != PolyBySpace.end(); ++BB_it) {
 		GDSBB cur_BB = BB_it->first;
 		if (cur_BB.isBBInside_wborders(*poly->GetBBox())) {
 			polyList = BB_it->second.polys;
 			if (std::find(polyList.begin(), polyList.end(), poly) != polyList.end()) {
-				BB_it->second.Remove(poly);
-
 				break;
 			}
 		}
+		i += 1;
+	}
+	return BB_it;
+}
+
+bool PolygonSort::Remove(GDSPolygon * poly) {
+	return Remove(poly, *poly->GetBBox());
+}
+bool PolygonSort::Remove(GDSPolygon * poly, GDSBB polyBBox)
+{
+	vector<GDSPolygon*> polyList;
+	vector<GDSBB> BBSpaceremoveList;
+
+	bool RemoveDone = false;
+	GDSBB cur_BB;
+	PolySpace PolyArea;
+	for (map<GDSBB, PolySpace>::iterator BB_it = PolyBySpace.begin(); BB_it != PolyBySpace.end(); ++BB_it) {
+		GDSBB cur_BB = BB_it->first;
+		if (cur_BB.isBBInside_wborders( polyBBox )) {
+			polyList = BB_it->second.polys;
+			if (std::find(polyList.begin(), polyList.end(), poly) != polyList.end()) {
+				RemoveDone = BB_it->second.Remove(poly);
+				if (RemoveDone) {
+					PolyArea = BB_it->second;
+				break;
+			}
+		}
+		}
+
 		if (BB_it->second.polys.size() == 0) {
 			// Remove empty space
 			BBSpaceremoveList.push_back(cur_BB);
 		}
 	}
+	
+	if (RemoveDone && cur_BB != PolyArea.GetBB()) {
+		PolyBySpace.erase(cur_BB);
+		PolyBySpace[PolyArea.GetBB()] = PolyArea;
+	}
+	
 	if (BBSpaceremoveList.size() > 0) {
 		for (size_t i = 1; i < BBSpaceremoveList.size() + 1; i++) {
 			PolyBySpace.erase(BBSpaceremoveList[BBSpaceremoveList.size() - i]);
 		}
 	}
-	polys.Remove(poly);
+	
+	return polys.Remove(poly);
+}
+
+bool PolygonSort::Update(GDSPolygon * poly, GDSBB prevBB) {
+	if(Remove(poly, prevBB)) {
+		if (Add(poly)) {
+			return true;
+		} else {
+			return false;
+		}
+	} else {
+		return false;
+	}
 }
 
 vector<GDSPolygon*> PolygonSort::Get()
@@ -1340,7 +1411,7 @@ vector<GDSPolygon*> PolygonSort::GetPolyNear(GDSBB BBox)
 	vector<GDSPolygon*> polycheck_list;
 	for (map<GDSBB, PolySpace>::iterator BB_it = PolyBySpace.begin(); BB_it != PolyBySpace.end(); ++BB_it) {
 		GDSBB cur_BB = BB_it->first;
-		if (cur_BB.intersect(BBox, cur_BB)) {
+		if (cur_BB.intersect_wborders(BBox, cur_BB)) {
 			polycheck_list = BB_it->second.polys;
 			for (size_t i = 0; i < polycheck_list.size(); i++) {
 				GDSPolygon *cur_poly = polycheck_list[i];

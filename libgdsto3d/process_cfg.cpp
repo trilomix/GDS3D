@@ -115,6 +115,7 @@ void GDSProcess::ParseFile(char *processfile, int cur_layer, float offset = 0, b
 	bool got_blue = false;
 	bool got_filter = false;
 	bool got_metal = false;
+	bool got_minspace = false;
 	bool got_show = false; 
 	bool got_shortkey = false;
 	/* End State variables */
@@ -194,6 +195,7 @@ void GDSProcess::ParseFile(char *processfile, int cur_layer, float offset = 0, b
 				got_blue = false;
 				got_filter = false;
 				got_metal = false;
+				got_minspace = false;
 				got_show = false;
 				got_shortkey = false;
 				current_element++;
@@ -226,6 +228,7 @@ void GDSProcess::ParseFile(char *processfile, int cur_layer, float offset = 0, b
 				NewLayer.Blue = 0.0;
 				NewLayer.Filter = 0.0;
 				NewLayer.Metal = 0;
+				NewLayer.MinSpace = 0.0;
 				NewLayer.Show = false;
 				NewLayer.Alt = false;
 				NewLayer.Ctrl = false;
@@ -459,6 +462,24 @@ void GDSProcess::ParseFile(char *processfile, int cur_layer, float offset = 0, b
 				}else{
 					sscanf(line, "Metal: %d", &NewLayer.Metal);
 					got_metal = true;
+				}
+			} else if (strstr(line, "MinSpace:")) {
+				if (!in_layer) {
+					v_printf(1, "Error: MinSpace definition outside of LayerStart and LayerEnd on line %d of process file.\n", current_line);
+					_Valid = false;
+					if (NewLayer.Name) {
+						delete[] NewLayer.Name;
+						NewLayer.Name = NULL;
+					}
+					fclose(pptr);
+					return;
+				}
+				if (got_minspace) {
+					v_printf(1, "Warning: Duplicate MinSpace definition on line %d of process file. Ignoring new definition.\n", current_line);
+				}
+				else {
+					NewLayer.MinSpace = GetLineValue(line, (char*)"MinSpace: ");
+					got_minspace = true;
 				}
 			}else if(strstr(line, "Show:")){
 				if(!in_layer){
@@ -702,6 +723,7 @@ void GDSProcess::AddLayer(int Layer, int Datatype)
 	NewLayer.Blue = 0.0;
 	NewLayer.Filter = 0.0;
 	NewLayer.Metal = 0;
+	NewLayer.MinSpace = 0.0;
 	NewLayer.Show = false;
 	NewLayer.Alt = false;
 	NewLayer.Ctrl = false;
@@ -878,6 +900,7 @@ void GDSProcess::AddLayer(struct ProcessLayer *NewLayer, bool flip)
 	layer->Blue = NewLayer->Blue;
 	layer->Filter = NewLayer->Filter;
 	layer->Metal = NewLayer->Metal;
+	layer->MinSpace = NewLayer->MinSpace;
 	layer->Index = NewLayer->Index;
 	layer->Alt = NewLayer->Alt;
 	layer->Ctrl = NewLayer->Ctrl;
@@ -948,6 +971,7 @@ bool GDSProcess::Save(const char *filename)
 		fprintf(fptr, "Blue: 0.0\n");
 		fprintf(fptr, "Filter: 0.0\n");
 		fprintf(fptr, "Metal: 0\n");
+		fprintf(fptr, "MinSpace: 0\n");
 		fprintf(fptr, "Show: 1\n");
 		fprintf(fptr, "LayerEnd\n\n");
 

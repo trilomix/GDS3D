@@ -31,12 +31,14 @@
 
 #define EPSILONPOINT 1000.0f
 
+typedef signed long long cInt;
 
 class Point2D
 {
 public:
 	double X;
 	double Y;
+	double Unit;
 
 	Point2D(){};
 	Point2D(double X, double Y){this->X = X; this->Y = Y;};
@@ -163,6 +165,24 @@ inline Point2D Point2D::dpx( double d)
 	}
 }
 
+// Edge Class
+class Edge{
+public:
+	Edge() { A = Point2D(0, 0); B = Point2D(0, 0); };
+	Edge(Point2D C, Point2D D) { A = C; B = D; };
+	double distance(Point2D P);
+	double length() const;
+	double direction() const;
+	Point2D GetA() const;
+	Point2D GetB() const;
+	bool intersection_woborder(const Edge & E, Point2D * I);
+	bool intersection(const Edge & E, Point2D * I);
+private:
+	Point2D A;
+	Point2D B;
+};
+
+// Point 3D Class
 class Point3D
 {
 public:

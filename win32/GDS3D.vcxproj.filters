@@ -33,6 +33,12 @@
     <Filter Include="Source Files\win32">
       <UniqueIdentifier>{e7087827-fe3b-45c4-8fd5-c40874833529}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\libgdsto3d\contrib">
+      <UniqueIdentifier>{adced150-e84f-4b66-9492-007da6840c7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\libgdsto3d\contrib">
+      <UniqueIdentifier>{3493d370-9f4d-492b-aed2-64a38b01f56d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\gdsoglviewer\gdsobject_ogl.h">
@@ -125,14 +131,17 @@
     <ClInclude Include="..\gdsoglviewer\ui_highlight.h">
       <Filter>Header Files\gdsoglviewer</Filter>
     </ClInclude>
-    <ClInclude Include="..\libgdsto3d\assembly_cfg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\gdsoglviewer\outputStream.h">
       <Filter>Header Files\gdsoglviewer</Filter>
     </ClInclude>
     <ClInclude Include="..\gdsoglviewer\geopolygon.h">
       <Filter>Header Files\gdsoglviewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libgdsto3d\assembly_cfg.h">
+      <Filter>Header Files\libgdsto3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libgdsto3d\voro++\src\voro++.hh">
+      <Filter>Header Files\libgdsto3d\contrib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -214,14 +223,23 @@
     <ClCompile Include="..\libgdsto3d\assembly_cfg.cpp">
       <Filter>Source Files\libgdsto3d</Filter>
     </ClCompile>
-    <ClCompile Include="..\libgdsto3d\gdselements.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\gdsoglviewer\outputStream.cpp">
       <Filter>Source Files\gdsoglviewer</Filter>
     </ClCompile>
     <ClCompile Include="..\gdsoglviewer\geopolygon.cpp">
       <Filter>Source Files\gdsoglviewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\gdselements.cpp">
+      <Filter>Source Files\libgdsto3d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\clipper\clipper.cpp">
+      <Filter>Source Files\libgdsto3d\contrib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\voro++\src\voro++.cc">
+      <Filter>Source Files\libgdsto3d\contrib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libgdsto3d\Voronoi3D.cpp">
+      <Filter>Source Files\libgdsto3d</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
