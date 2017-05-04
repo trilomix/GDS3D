@@ -1,3 +1,7 @@
+#if defined(_OPENMP)
+  #include <omp.h>
+#endif
+
 #include "outputStream.h"
 #include "gdsobject_ogl.h"
 #include <algorithm>
@@ -237,7 +241,9 @@ void Output::Convert_Polygon() {
 	for (size_t i = 0; i < FullGDSItems.size(); i++)
 	{
 		cur_GDS = FullGDSItems[i];
-		for (size_t j = 0; j < cur_GDS->layer_list.size(); j++)
+#pragma omp parallel for private(PolygonItems) 
+		//change type to long long as size_t is not support for omp
+		for (long long j = 0; j < cur_GDS->layer_list.size(); j++)
 		{
 			ProcessLayer *do_layer = cur_GDS->layer_list[j];
 
@@ -245,11 +251,13 @@ void Output::Convert_Polygon() {
 			PolygonItems = SimplifyPolyItems_wClipper(cur_GDS->GDSPolygonItems, do_layer);
 			// Second pass for some particular polygon
 			PolygonItems = SimplifyPolyItems_wClipper(PolygonItems, do_layer);
+				#pragma omp critical
+				{
 			for (size_t k = 0; k < PolygonItems.size(); k++) {
 				cur_GDS->FullPolygonItems.push_back(PolygonItems[k]);
 			}
 		}
-
+			}
 		// Object to Sort polygon
 		cur_GDS->FullSortPolygonItems.SetLayerList(cur_GDS->layer_list);
 		cur_GDS->FullSortPolygonItems.Add(cur_GDS->FullPolygonItems);

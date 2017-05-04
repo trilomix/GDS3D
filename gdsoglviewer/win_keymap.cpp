@@ -42,6 +42,7 @@ WinKeymap::WinKeymap()
 	item->Text = "T:                  Topcell selection"; AddItem(item);
 	item->Text = "R:                  Reset View"; AddItem(item);
 	item->Text = "E:                  Toggle Exploded View"; AddItem(item);
+	item->Text = "F:                  Export to GMSH"; AddItem(item);
 	item->Text = "K:                  Enable Ruler"; AddItem(item);
 	item->Text = "H:                  Enable Net Highlighting"; AddItem(item);
 	item->Text = "ESC:                Cancel"; AddItem(item);

@@ -1,4 +1,9 @@
 
+
+#if defined(_OPENMP)
+  #include <omp.h>
+#endif
+
 #include "Voronoi3D.h"
 #include <fstream>
 #include "voro++/src/voro++.hh"
@@ -11,41 +16,118 @@ using namespace voro;
 clip::clip(){
 	Waittime = 1;
 	time = wm->new_timer();
+
+	// init timer
+	wm->timer(time, 1);
 }
 
 clip::~clip(){}
 
-void clip::AddPoly(GeoPolygon* poly, bool recurse) {
+void clip::AddPoly(GeoPolygon* poly, bool recurse, vector<Point3D> *vertices, vector<GoePolyPoint> *MeshPoints) {
 	for (size_t i = 0; i<poly->GetPoints(); i++) {
 		Point2D p = poly->GetCoords(i);
-		vertices.push_back(Point3D(p.X, p.Y, poly->GetHeight()));
-		vertices.push_back(Point3D(p.X, p.Y, poly->GetHeight() + poly->GetThickness()));
+		vertices->push_back(Point3D(p.X, p.Y, poly->GetHeight()));
+		vertices->push_back(Point3D(p.X, p.Y, poly->GetHeight() + poly->GetThickness()));
 		GoePolyPoint Poly_P;
 		Poly_P.poly = poly;
 		Poly_P.index = i;
-		MeshPoints.push_back(Poly_P);
+		MeshPoints->push_back(Poly_P);
 	}
 	if (recurse && poly->GetHoles().size()>0) {
 		for (size_t j = 0; j < poly->GetHoles().size(); j++) {
 			GeoPolygon* poly_hole = poly->GetHoles()[j];
-			AddPoly(poly_hole, recurse);
+			AddPoly(poly_hole, recurse, vertices, MeshPoints);
 		}
 	}
 }
 
 void clip::execute(vector<GDSGroup*> FullGDSItems){
-	size_t layer_cnt = 0;
-	for (size_t k = 0; k < FullGDSItems.size(); k++) {
-		GDSGroup *cur_GDS = FullGDSItems[k];
-		for (size_t i = 0; i < cur_GDS->OutLinesItems.size(); i++)
+	for (size_t i = 0; i < FullGDSItems.size(); i++) {
+		GDSGroup *cur_GDS = FullGDSItems[i];
+#pragma omp parallel for 
+		for (long long j = 0; j < cur_GDS->layer_list.size(); j++)
 		{
-			GeoPolygon *poly = cur_GDS->OutLinesItems[i];
-			AddPoly(poly, true);
+			vector<Point3D> vertices;
+			vector<GoePolyPoint> MeshPoints;
+			size_t z_div;
+	size_t layer_cnt = 0;
+			layers *Cur_Layer = cur_GDS->layer_list[j];
+			bool LayerFound = false;
+			GeoPolygon *poly;
+			for (size_t k = 0; k < cur_GDS->OutLinesItems.size(); k++) {
+				poly = cur_GDS->OutLinesItems[k];
+				if (poly->GetLayer() == Cur_Layer) {
+					LayerFound = true;
+					break;
+				}
+			}
+			if (!LayerFound) {
+				for (size_t k = 0; k < cur_GDS->FullPolygonItems.size(); k++) {
+					poly = cur_GDS->FullPolygonItems[k];
+					if (poly->GetLayer() == Cur_Layer) {
+						AddPoly(poly, false, &vertices, &MeshPoints);
+						for (size_t l = 0; l < poly->GetHoles().size(); l++) {
+							GeoPolygon* poly_hole = poly->GetHoles()[l];
+							AddPoly(poly_hole, false, &vertices, &MeshPoints);
+						}
+					}
+				}
+				layer_cnt++;
+			}
+			else {
+				AddPoly(poly, true, &vertices, &MeshPoints);
+				layer_cnt++;
+			}
+
+			// Add Upper and lower Layers
+	for (size_t k = 0; k < FullGDSItems.size(); k++) {
+				GDSGroup *add_cur_GDS = FullGDSItems[k];
+				
+				for (size_t l = 0; l < add_cur_GDS->layer_list.size(); l++) {
+					layers *add_layer = add_cur_GDS->layer_list[l];
+					
+					if (add_layer == Cur_Layer)
+						continue;
+					if (Cur_Layer->Height*Cur_Layer->Units->Unitu > (add_layer->Height + add_layer->Thickness)*add_layer->Units->Unitu)
+						continue;
+					if ((Cur_Layer->Height + Cur_Layer->Thickness)*Cur_Layer->Units->Unitu  < add_layer->Height*add_layer->Units->Unitu)
+						continue;
+					GeoPolygon *add_poly;
+					for (size_t m = 0; m < add_cur_GDS->OutLinesItems.size(); m++) {
+						add_poly = add_cur_GDS->OutLinesItems[m];
+						if (add_poly->GetLayer() == add_layer) {
+							LayerFound = true;
+							break;
+						}
+					}
+					if (!LayerFound) {
+						for (size_t n = 0; n < add_cur_GDS->FullPolygonItems.size(); n++) {
+							add_poly = add_cur_GDS->FullPolygonItems[n];
+							if (add_poly->GetLayer() == add_layer) {
+								AddPoly(add_poly, false, &vertices, &MeshPoints);
+								for (size_t o = 0; o < add_poly->GetHoles().size(); o++) {
+									GeoPolygon* add_poly_hole = add_poly->GetHoles()[o];
+									AddPoly(add_poly_hole, false, &vertices, &MeshPoints);
+								}
+							}
+						}
+			layer_cnt++;
+		}
+					else {
+						AddPoly(add_poly, true, &vertices, &MeshPoints);
 			layer_cnt++;
 		}
 	}
+
+	}
 	z_div = layer_cnt+1;
-	execute();
+
+			execute(vertices, MeshPoints, z_div, Cur_Layer);
+		}
+		v_printf(0, "\r                                                               \r");
+	}
+	
+	
 }
 
 void clip::execute(vector<GeoPolygon*> polyList) {
@@ -54,15 +136,15 @@ void clip::execute(vector<GeoPolygon*> polyList) {
 	set<double> z_list;
 	for (size_t i = 0; i<polyList.size(); i++) {
 		GeoPolygon *poly = polyList[i];
-		AddPoly(poly,false);
+		//AddPoly(poly,false);
 		double z = poly->GetHeight();
 		z_list.insert(z);
 	}
-	z_div = z_list.size()+1;
-	execute();
+	//z_div = z_list.size()+1;
+	//execute();
 }
 
-void clip::execute()
+void clip::execute(vector<Point3D> vertices, vector<GoePolyPoint> MeshPoints, size_t z_div, layers *CurLayer)
 {
   size_t i;
   size_t j;
@@ -80,11 +162,10 @@ void clip::execute()
   std::vector<Point3D> generators;
   std::vector<int> IDs;
   std::vector<int> IDs2;
-  std::vector<int> neighbors;
+  
   std::vector<std::vector<std::vector<int> > > bisectors;
 
-  // init timer
-  wm->timer(time, 1);
+
   min_x = 1000000000.0;
   max_x = -1000000000.0;
   min_y = 1000000000.0;
@@ -132,76 +213,45 @@ void clip::execute()
   count = 0;
   loop.start();
   do {
+	  std::vector<int> neighbors;
+	  pid = loop.pid();
+	  GoePolyPoint Poly_P = MeshPoints[IDs2[IDs[pid]] / 2];
+	  if (Poly_P.poly->GetLayer() != CurLayer) {
+		  count++;
+		  continue;
+	  }
 	  cont.compute_cell(cell, loop);
 	  cell.neighbors(neighbors);
-	  pid = loop.pid();
 	  assert(IDs[pid] == count);
 	  
-	  //v_printf(1, "%2d %2d", counti, IDs2[count]);
-	  //v_printf(1, "(%2.2g, %2.2g, %2.2g)", generators[count].X, generators[count].Y, generators[count].Z);
-	  //v_printf(1, "\n");
 	  for (j = 0; j < neighbors.size(); j++) {
 		  if (neighbors[j] >= 0) {
-			  //v_printf(1, " %2d", neighbors[j]);
-			  //v_printf(1, "(%2.2g, %2.2g, %2.2g)", generators[IDs[neighbors[j]]].X, generators[IDs[neighbors[j]]].Y, generators[IDs[neighbors[j]]].Z);
-
-			  GoePolyPoint Poly_P = MeshPoints[IDs2[count] / 2];
 			  GoePolyPoint Poly_P_Neighbor = MeshPoints[neighbors[j] / 2];
-			  CoordMeshElemSize curPoint = Poly_P.poly->GetMeshCoords(Poly_P.index);
-			  // check unicity
-			  bool found = false;
-			  for (size_t k = 0; k < curPoint.Neighbors.size(); k++) {
-				  if (curPoint.Neighbors[k] == Poly_P_Neighbor) {
-					  found = true;
-					  break;
-				  }
-			  }
-			  if (!found)
+
+			  // Add only next Upper and lower Layers
+			  if (Poly_P.poly->GetHeight() > Poly_P_Neighbor.poly->GetHeight() + Poly_P_Neighbor.poly->GetThickness() + 0.001)
+				  continue;
+			  if (Poly_P.poly->GetHeight() + Poly_P.poly->GetThickness() + 0.001 < Poly_P_Neighbor.poly->GetHeight())
+				  continue;
+			  // remove same poly
+			  if (Poly_P == Poly_P_Neighbor)
+				  continue;
+#pragma omp critical   
 				  Poly_P.poly->AddPointNeighbor(Poly_P.index, Poly_P_Neighbor);
 		  }
 
 	  }
 	  // Check timer?
 	  if (wm->timer(time, 0) > Waittime) {
-		  v_printf(0, "\r                                                               ");
-		  v_printf(0, "\rCompute Voronoi Done %5.2f%% (%zd/%zd)", 1.0*(count) / IDs.size()*100.0, count, IDs.size());
-		  fflush(stdout); 
 		  wm->timer(time, 1);
+		  v_printf(0, "\r                                                               ");
+		  v_printf(0, "\rCompute Voronoi %5.2f%% Done (%zd/%zd)", 1.0*(count) / IDs.size()*100.0, count, IDs.size());
+		  v_printf(0, " Layer : %s", Poly_P.poly->GetLayer()->Name);
+		  fflush(stdout); 
 	  }
 
 	  count++;
   } while (loop.inc());
-  v_printf(0, "\r                                                               \r");
+	  
+  
 }
-/*
-double clip::min(double a,double b){
-  if(a<b) return a;
-  else return b;
-}
-
-double clip::max(double a,double b){
-  if(a>b) return a;
-  else return b;
-}
-*/
-int clip::category(int a,int b,int c,int d)
-{
-  int count;
-  count = 0;
-  if(a<0) count++;
-  if(b<0) count++;
-  if(c<0) count++;
-  if(d<0) count++;
-  if(count==0) return 1;
-  else if(count==1) return 2;
-  else if(count==2) return 3;
-  else return 4;
-}
-/*
-void clip::print_segment(Point3D p1,Point3D p2,std::ofstream& file){
-  file << "SL ("
-  << p1.X << ", " << p1.Y << ", " << p1.Z << ", "
-  << p2.X << ", " << p2.Y << ", " << p2.Z
-  << "){10, 20};\n";
-}
-*/

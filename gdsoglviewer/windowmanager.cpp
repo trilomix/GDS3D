@@ -24,6 +24,10 @@
 #include "win_legend.h"
 #include "renderer.h"
 
+#if defined(_OPENMP)
+  #include <omp.h>
+#endif
+
 WindowManager *wm;
 
 WindowManager::WindowManager()

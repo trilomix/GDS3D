@@ -62,6 +62,9 @@ double Edge::distance(Point2D P)
 		if ((A.X == B.X)&& (P.Y<max(A.Y,B.Y)&& P.Y>min(A.Y, B.Y))) {
 			return fabs(A.X - P.X);
 		}
+		if ((A.Y == B.Y) && (P.X<max(A.X, B.X) && P.X>min(A.X, B.X))) {
+			return fabs(A.Y - P.Y);
+		}
 
 		double sx = B.X - A.X;
 		double sy = B.Y - A.Y;
