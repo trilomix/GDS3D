@@ -7,20 +7,62 @@
 *.dia
 *.dat
 
+win32/Release-XP/GDS3D.tlog/unsuccessfulbuild
+*.lastbuildstate
+
+*.iobj
+.DS_Store
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+## Build generated
+mac/build/
+mac/DerivedData/
+mac/GDS3D.*
+
+assembly/AC*.assembly
+assembly/BD*.assembly
+assembly/PC*.assembly
+assembly/PO*.assembly
+
+*.geo
+*.pro
+
+gds/BD*.gds
+gds/BG*.gds
+gds/PC*.gds
+gds/PO*.gds
+gds/LI*.gds
+
+RunWin32 -*.cmd 
+RunWin64 -*.cmd 
+
+techfiles/ac*.txt
+techfiles/bt*.txt
+techfiles/ip*.txt
+techfiles/pc*.txt
+techfiles/so*.txt
+techfiles/pc*.txt
+
 mac/GDS3D.app.dSYM/Contents/Info.plist
-
 mac/GDS3D.app.dSYM/Contents/Resources/DWARF/GDS3D
-
 mac/GDS3D.build/Debug/GDS3D.build/dgph
-
 mac/GDS3D.build/Debug/GDS3D.build/dgph~
-
 mac/GDS3D.build/Debug/GDS3D.build/Objects-normal/x86_64/GDS3D.LinkFileList
-
 mac/GDS3D.xcodeproj/project.xcworkspace/xcuserdata/bpigeard.xcuserdatad/UserInterfaceState.xcuserstate
-
 mac/GDS3D.xcodeproj/project.xcworkspace/xcuserdata/bpigeard.xcuserdatad/WorkspaceSettings.xcsettings
-
 mac/GDS3D.xcodeproj/xcuserdata/bpigeard.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
-
 mac/GDS3D.xcodeproj/xcuserdata/bpigeard.xcuserdatad/xcschemes/xcschememanagement.plist
