@@ -33,10 +33,14 @@ GDS3D is an application that can interpret so called IC layouts and render them 
 The program can be started from a command line using the following syntax:
 
         GDS3D -p <process definition file> -i <GDSII file> [-t <topcell>] [-f] [-u] [-h] [-v]
+   Or
+        GDS3D -a <assembly definition file> [-t <topcell>] [-f] [-u] [-h] [-v]
 
 Required parameters:
         -p      Process definition file
         -i      GDSII file
+Or
+        -a      Assembly definition file
 
 Optional parameters:
         -t      Top cell, will default to top-most cell in GDS if omitted
@@ -73,6 +77,10 @@ The process definition files contain the physical properties of the process bein
         Metal: 1                  # Metal clickable in net highlighting mode (0 for VIA)
         Shortkey: 1               # Shortcut to toggle layer visibility
         Show: 1                   # Set to 0 for layers that are not to be rendered
+        Vitual: 10 AND 11         # Define a new layer where 10 AND 11 exist     
+        Material: Al              # Define Material of layer for gmsh output only
+        OutMaterial: SiO2         # Define OutMaterial of layer for gmsh output only
+        MinSpace: 350             # Define Minimum space to merge via for gmsh output only   
         LayerEnd                  # End tag
 
 The first layer in the file is the substrate and must always be present. Its layer number is always 255 and it is the only layer for which a filter value other than 0.0 is advised (0.5 works well here). Comments can be added to the definition file by pre-pending them with #.
@@ -178,7 +186,7 @@ Thin clients working with NX Machine or VNC are not suitable, as they render gra
 The compiled executables delivered in the packages should work on Windows XP, OS X Snow Leopard, Linux Kernel 2.5, and higher. If you are having dificulties, you can recompile the source.
 
 For Windows:
-- Get Visual Studio C++ Express
+- Get Visual Studio 
 - Open win32/GDS3D.sln
 - Build in Visual Studio 
 - Clean up by removing the Release and Debug folders in win32
@@ -191,7 +199,7 @@ For Linux:
 - To clean, run: make -C linux clean
 
 For Mac OS:
-- Install Xcode 4.0
+- Install Xcode 8.3.2
 - Open mac/GDS3D.xcodeproj
 - Build in Xcode
 Or:
@@ -210,6 +218,7 @@ L:                  Toggle Legend
 T:                  Topcell selection
 R:                  Reset View
 E:                  Toggle Exploded View
+F:                  OutPut to gmsh (geo File)
 K:                  Enable Ruler
 H:                  Enable Net Highlighting
 ESC:                Cancel
@@ -241,3 +250,7 @@ http://sourceforge.net/projects/gds3d/
 
 Jasper Velner
 Michiel Soer
+
+https://github.com/trilomix/GDS3D
+
+Trilomix
