@@ -1,0 +1,16 @@
+GDS_Start: example
+Process_File: techfiles/example.txt 
+GDS_File: gds/example.gds
+Z: 0
+GDS_End
+
+GDS_Start: example2
+Process_File: techfiles/example.txt 
+GDS_File: gds/example.gds
+X: 189
+Y: 104
+#Z: 221 #Not working as same tech file
+Angle: 180
+Flipped: 1
+#FlipChip: 1 #Not working as same tech file
+GDS_End
