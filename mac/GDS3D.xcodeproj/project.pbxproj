@@ -241,8 +241,6 @@
 		60896E6B1700812A00F0A0EF /* libgdsto3d */ = {
 			isa = PBXGroup;
 			children = (
-				DFD86D011E77B0F300506AB0 /* clipper.cpp */,
-				DFD86D021E77B0F300506AB0 /* clipper.hpp */,
 				DFED73BE1E35B29100625EAF /* assembly_cfg.cpp */,
 				DFED73BF1E35B29100625EAF /* assembly_cfg.h */,
 				DFED73BC1E35B26200625EAF /* gdselements.cpp */,
@@ -279,6 +277,8 @@
 		DFD86D071E83B0C400506AB0 /* contrib */ = {
 			isa = PBXGroup;
 			children = (
+				DFD86D021E77B0F300506AB0 /* clipper.hpp */,
+				DFD86D011E77B0F300506AB0 /* clipper.cpp */,
 				DFD86D0A1E83B12E00506AB0 /* voro++.cc */,
 				DFD86D0B1E83B12E00506AB0 /* voro++.hh */,
 			);
