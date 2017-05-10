@@ -55,7 +55,7 @@ The program can be run in Windows, Linux and MacOS, and each OS has its own exec
         Linux:      <Program folder>/linux/GDS3D
         MacOS:      <Program folder>/mac/GDS3D
 
-There are also run scipts for each OS that will load an example GDSII file in a mock-up process. These files are:
+There are also run scripts for each OS that will load an example GDSII file in a mock-up process. These files are:
 
         Windows:    <Program folder>\RunWin32.cmd
         Linux:      <Program folder>/RunLinux.sh
@@ -183,7 +183,7 @@ Thin clients working with NX Machine or VNC are not suitable, as they render gra
 
 6. Compiling the Code
 
-The compiled executables delivered in the packages should work on Windows XP, OS X Snow Leopard, Linux Kernel 2.5, and higher. If you are having dificulties, you can recompile the source.
+The compiled executables delivered in the packages should work on Windows XP, OS X Snow Leopard, Linux Kernel 2.5, and higher. If you are having difficulties, you can recompile the source.
 
 For Windows:
 - Get Visual Studio 
@@ -244,12 +244,7 @@ Wheel Up/Down:      Move Up/Down
 
 8. Contact Information
 
-If you are having difficulties running this program, don't hesitate to contact us for free support through the SourceForge website:
-
-http://sourceforge.net/projects/gds3d/
-
-Jasper Velner
-Michiel Soer
+If you are having difficulties running this program, don't hesitate to contact me for free support through the GitHub website:
 
 https://github.com/trilomix/GDS3D
 
