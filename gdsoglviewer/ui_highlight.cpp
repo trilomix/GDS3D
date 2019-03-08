@@ -99,7 +99,8 @@ UIHighlight::Draw()
 		render_object->PrepareRender(projection, worldview);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDepthFunc(GL_LEQUAL);
-		render_object->RenderList(worldview, false, Update);
+		//render_object->RenderList(worldview, false, Update);
+		render_object->RenderList(worldview, 10.0, Update);
 		render_object->EndRender(Update);
 		glDepthFunc(GL_LESS);
 
@@ -500,6 +501,7 @@ UIHighlight::tracePoint(float x, float y, GDSObject *obj, GDSMat object_mat, Pro
 		cur_poly = PolygonToCheckItems[i];
 		cur_mat = object_mat;	
 		cur_object = obj;
+		break;
 	}	
 
 	// Propagate through hierarchy
@@ -652,6 +654,9 @@ UIHighlight::intersectPolyOnObject(GDSPolygon *poly, GDSMat poly_mat, GDSObject 
 	{
 		target_poly = PolygonToCheckItems[i];
 		
+		if (target_poly == poly) {
+			continue;
+		}
 		if (PolygonItemsNetRemove.find(target_poly) != PolygonItemsNetRemove.end()) {
 			continue; 
 		}

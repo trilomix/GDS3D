@@ -122,13 +122,13 @@ void Output::SaveToGEO(GDSObject_ogl *render_object) {
 	
 	cur_GDS = new GDSGroup(render_object);
 	if (wm->assembly) {
-	GDS* gds = wm->Assembly->GetGDS(render_object->GetName());
-	if (gds == NULL) {
-		gds = wm->Assembly->GetGDS();
-		cur_GDS->Name = gds->Name;
-	}
-	if (gds->MeshMaxElemSize && gds->MeshMaxElemSize < cur_GDS->MeshMaxElemSize)
-		cur_GDS->MeshMaxElemSize = gds->MeshMaxElemSize;
+		GDS* gds = wm->Assembly->GetGDS(render_object->GetName());
+		if (gds == NULL) {
+			gds = wm->Assembly->GetGDS();
+			cur_GDS->Name = gds->Name;
+		}
+		if (gds->MeshMaxElemSize && gds->MeshMaxElemSize < cur_GDS->MeshMaxElemSize)
+			cur_GDS->MeshMaxElemSize = gds->MeshMaxElemSize;
 	}
 	FullGDSItems.push_back(cur_GDS);
 	for (size_t i = 0; i < render_object->PolygonItems.size(); i++) {
@@ -213,6 +213,7 @@ void Output::SaveToGEO(GDSObject_ogl *object, bool flat) {
 	if (object->PolygonItems.empty() && object->refs.empty())
 		return;
 
+	filename += "."+string(object->GetName());
 
 	cur_GDS = new GDSGroup(object);
 	if (object->GetGDSName() && wm->assembly) {
@@ -241,6 +242,19 @@ void Output::Convert_Polygon() {
 	for (size_t i = 0; i < FullGDSItems.size(); i++)
 	{
 		cur_GDS = FullGDSItems[i];
+/*		// Disable the automatic thread number (from your number of procs for exameple)
+		omp_set_dynamic(0);
+		//omp_set_num_threads(omp_get_num_procs());
+		omp_set_num_threads(4);
+#pragma omp parallel 
+		{
+			v_printf(0, "Hello I'm %d \n", omp_get_thread_num());
+# pragma omp single 	
+			{
+				v_printf(0, "We are %d\n", omp_get_num_threads());
+				v_printf(0, "Found %d Processors\n", omp_get_num_procs()); 
+			}
+		}*/
 #pragma omp parallel for private(PolygonItems) 
 		//change type to long long as size_t is not support for omp
 		for (long long j = 0; j < cur_GDS->layer_list.size(); j++)
@@ -388,10 +402,10 @@ void Output::SetMeshElemSize(GeoPolygon *poly, size_t *Modif, size_t *TotDone, s
 	
 	// Remove unrevalant polygon
 	if (poly->IsHole() || poly->GetHoles().size() > 0) {
-	for (size_t i = 0; i < PolyItemsNear.size(); i++) {
-		GeoPolygon* cur_poly = PolyItemsNear[i];
-		if (cur_poly == poly)
-			continue;
+		for (size_t i = 0; i < PolyItemsNear.size(); i++) {
+			GeoPolygon* cur_poly = PolyItemsNear[i];
+			if (cur_poly == poly)
+				continue;
 			if (poly->IsHole()) {
 				if (cur_poly->GetLayer() == poly->GetLayer()) {
 					if (!(cur_poly->hasPoly(poly) || poly->hasPoly(cur_poly))) {
@@ -432,7 +446,7 @@ void Output::SetMeshElemSize(GeoPolygon *poly, size_t *Modif, size_t *TotDone, s
 		for (size_t i = 0; i < poly->GetHoles().size(); i++) {
 			GeoPolygon* cur_poly = poly->GetHoles()[i];
 			SetMeshElemSize(cur_poly, Modif, TotDone, TotalNbPoly, false);
-				
+
 			// Check timer?
 			if (wm->timer(time, 0) > Waittime) {
 				v_printf(0, "\r                                               \r");
@@ -452,13 +466,13 @@ void Output::SetMeshElemSize(GeoPolygon *poly, size_t *Modif, size_t *TotDone, s
 				wm->timer(time, 1);
 			}
 		}
-		}
+	}
 	*Modif +=  poly->SetPointsMeshElemSize(TopDownMaxRatio);
 	/*
 	for (size_t i = 0; i < PolyItemsNear.size(); i++) {
 		
 		GeoPolygon* cur_poly = PolyItemsNear[i];
-		
+
 		if (cur_poly == poly)
 			continue;
 
@@ -472,7 +486,7 @@ void Output::SetMeshElemSize(GeoPolygon *poly, size_t *Modif, size_t *TotDone, s
 
 	if (currentMesh != poly->GetMeshElemSize() && *Modif==0)
 		*Modif = 1;
-
+		
 	// Check timer?
 	if (wm->timer(time, 0) > Waittime*(1+(19*!Countpoly))) {
 		v_printf(0, "\r                                               \r");
@@ -510,10 +524,10 @@ void Output::Traverse(GDSObject *object, GDSMat object_mat) {
 		GDSPolygon *curpoly = object->PolygonItems[i];
 		if (curpoly->GetLayer()->Show) {
 			GDSpoly = new GDSPolygon(*curpoly);
-		GDSpoly->transformPoints(object_mat);
+			GDSpoly->transformPoints(object_mat);
 			GDSpoly->Orientate();
-		cur_GDS->GDSPolygonItems.push_back(GDSpoly);
-	}
+			cur_GDS->GDSPolygonItems.push_back(GDSpoly);
+		}
 	}
 	// Add Polgon of the refs CellView
 	for (size_t i = 0; i < object->refs.size(); i++) {
@@ -557,10 +571,10 @@ void Output::Geometry() {
 			double EdgeOffset = 1.0;
 			double sign = 1.0;
 			
-					Outline->AddPoint(cur_GDS->bbox.min - Point2D(EdgeOffset, sign*EdgeOffset));
-					Outline->AddPoint(cur_GDS->bbox.min.X - EdgeOffset, cur_GDS->bbox.max.Y + sign*EdgeOffset);
-					Outline->AddPoint(cur_GDS->bbox.max + Point2D(EdgeOffset, sign*EdgeOffset));
-					Outline->AddPoint(cur_GDS->bbox.max.X + EdgeOffset, cur_GDS->bbox.min.Y - sign*EdgeOffset);
+			Outline->AddPoint(cur_GDS->bbox.min - Point2D(EdgeOffset, sign*EdgeOffset));
+			Outline->AddPoint(cur_GDS->bbox.min.X - EdgeOffset, cur_GDS->bbox.max.Y + sign*EdgeOffset);
+			Outline->AddPoint(cur_GDS->bbox.max + Point2D(EdgeOffset, sign*EdgeOffset));
+			Outline->AddPoint(cur_GDS->bbox.max.X + EdgeOffset, cur_GDS->bbox.min.Y - sign*EdgeOffset);
 
 			Outline->Orientate();
 			Outline->SetIsHole(true);
@@ -608,7 +622,7 @@ void Output::Geometry() {
 					if (Modif > 0) { 
 						v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) Modif:%zd", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly, Modif); 
 					} else { 
-					v_printf(0,"\rTotal Done %5.2f%% (%zd/%zd)", 1.0*(TotDone)/TotalNbPoly*100.0, TotDone, TotalNbPoly);
+						v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd)", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly); 
 					}
 					fflush(stdout);
 					wm->timer(time, 1);
@@ -630,7 +644,7 @@ void Output::Geometry() {
 								v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) Modif:%zd", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly, Modif);
 							}
 							else {
-							v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) inside (%zd/%zd)", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly, j, poly->GetHoles().size()-1);
+								v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) inside (%zd/%zd)", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly, j, poly->GetHoles().size() - 1);
 							}
 							fflush(stdout);
 							wm->timer(time, 1);
@@ -647,7 +661,7 @@ void Output::Geometry() {
 						v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd) Modif:%zd", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly, Modif);
 					}
 					else {
-					v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd)", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly);
+						v_printf(0, "\rTotal Done %5.2f%% (%zd/%zd)", 1.0*(TotDone) / TotalNbPoly*100.0, TotDone, TotalNbPoly);
 					}
 					fflush(stdout);
 					wm->timer(time, 1);
@@ -685,7 +699,7 @@ void Output::Geometry() {
 				/*vector<GeoPolygon *> PolyList = TraverseGeoLayer(poly);
 				for (size_t j = 0; j < PolyList.size(); j++) {
 					GeoPolygon* curPoly = PolyList[j];
-				SetMeshElemSize(poly, &Modif);
+					SetMeshElemSize(poly, &Modif);
 					TotDone += 1;
 					// Check timer?
 					if (wm->timer(time, 0) > Waittime) {
@@ -774,7 +788,7 @@ void Output::Geometry() {
 	fprintf(file, "Mesh.CharacteristicLengthMax = 1e+22;              // Default 1e+22\n");
 	fprintf(file, "Mesh.CharacteristicLengthExtendFromBoundary = 1; //Default 1\n");
 	fprintf(file, "//Mesh.Algorithm = 8; Default 2 \n");
-	fprintf(file, "Mesh.Algorithm = 8; // mesh algorithm 1=MeshAdapt, 2=Automatic, 5=Delaunay, 6=Frontal, 7=BAMG, 8=DelQuad\n");
+	fprintf(file, "Mesh.Algorithm = 2; // mesh algorithm 1=MeshAdapt, 2=Automatic, 5=Delaunay, 6=Frontal, 7=BAMG, 8=DelQuad\n");
 	fprintf(file, "Mesh.RecombineAll = 0;                           // Default 0\n");
 	fprintf(file, "Mesh.RecombinationAlgorithm = 0;                 // Default 1 0=standard, 1=blossom\n");
 	fprintf(file, "Mesh.Algorithm3D = 1; //Default 1 mesh algorithm 1=Delaunay, 2=New Delaunay, 4=Frontal, 5=Frontal Delaunay,6 = Frontal Hex, 7 = MMG3D, 9 = R - tree\n");
@@ -1537,20 +1551,9 @@ void Output::PolygonPoints(GeoPolygon * polygon, bool dielectrique, double MeshE
 		return;
 	
 	vector<GeoPolygon*> PolyItems;
-	//GeoPolygon* poly_BottomMesh = new GeoPolygon(cur_GDS->Name, polygon, polygon->IsHole());
-	//poly_BottomMesh->SetMeshElemSize(polygon->GetMeshElemSize());
-	//PolyItems = GetContactPolyItems(polygon, cur_GDS->FullPolygonItems, false /*Bottom*/);
+	
 	PolyItems = GetContactPolyItems(polygon, cur_GDS->FullSortPolygonItems.GetPolyNear(*polygon->Get3DBBox()), false /*Bottom*/);
-	//for (size_t k = 0; k < PolyItems.size(); k++) {
-	//	GeoPolygon *poly_contact = PolyItems[k];
-		//double poly_contact_currentMesh = poly_contact->GetMeshElemSize();
-		//if (poly_contact->GetMeshElemSize() < poly_BottomMesh->GetMeshElemSize() / 10)
-		//	poly_BottomMesh->SetMeshElemSize(poly_contact);
-	//}
-
-
-	//polygon->SetSurface(cur_Line_Index + polygon->GetPoints() + 1);
-	//polygon->SetPoint_Index(cur_Line_Index + polygon->GetPoints() + 1);
+	
 	polygon->SetSurface(cur_Surface_Index);
 	if (polygon->IsHole())
 		fprintf(file, "//Start Polygon %s (Dielec-%s)\n", polygon->GetExtrudeVarName().c_str(), layer->Name);
@@ -1562,29 +1565,7 @@ void Output::PolygonPoints(GeoPolygon * polygon, bool dielectrique, double MeshE
 	//Points (n)
 	polygon->SetPoint_Index(cur_Point_Index);
 	fprintf(file, "%s", polygon->GetBottomGeo(cur_Line_Index).c_str());
-	/*
-	//Field
-	fprintf(file, "AttField = %zd;\n", cur_Field_Index);
-	fprintf(file, "Field[AttField] = Attractor;\n");
-	fprintf(file, "Field[AttField].EdgesList = {");
-	polygon->AddLineLoop(atoi(polygon->GetSurfaceID().c_str()));
-	for (size_t j = 0; j < polygon->GetPoints(); j++) {
 
-		if (j == polygon->GetPoints() - 1)
-			fprintf(file, "%zd", cur_Line_Index + j);
-		else
-			fprintf(file, "%zd,", cur_Line_Index + j);
-	}
-	fprintf(file, " };\n");
-	fprintf(file, "ThrField = %zd;\n", cur_Field_Index+1);
-	fprintf(file, "Field[ThrField] = Threshold;\n");
-	fprintf(file, "Field[ThrField].IField = AttField;\n");
-	fprintf(file, "Field[ThrField].LcMin = %f*cl%d;\n",polygon->GetMeshElemSize(), layer->Index);
-	fprintf(file, "Field[ThrField].LcMax = %f*cl%d;\n", MeshElemSize, layer->Index);
-	fprintf(file, "Field[ThrField].DistMin = %f*cl%d;\n", polygon->GetMeshElemSize(), layer->Index);
-	fprintf(file, "Field[ThrField].DistMax = 10*%f*cl%d;\n", polygon->GetMeshElemSize(), layer->Index);
-	cur_Field_Index += 2;
-	*/
 	cur_Point_Index +=  polygon->GetPoints();
 	cur_Line_Index += polygon->GetPoints();
 
@@ -2129,18 +2110,22 @@ void Output::ConnectPoly(GeoPolygon *polygon, bool Top) {
 			}
 
 			if (Top) {
+				string ErraseString = "Plane Surface(" + polygon->GetTopSurfaceID() + ") = { " + polygon->GetTopLoopLinesID() ;
+				std::string::size_type s_i = Surface_Geo.find(ErraseString);
+				std::string::size_type s_i_endofline = Surface_Geo.find("\n",s_i+1);
+				Surface_Geo.erase(s_i, s_i_endofline- s_i+1);
+				ErraseString = polygon->GetTopSurfaceID() + " = news;";
+				s_i = Surface_Geo.find(ErraseString);
+				s_i_endofline = Surface_Geo.find("\n", s_i + 1);
+				Surface_Geo.erase(s_i, s_i_endofline - s_i + 1);
 				Surface_Geo += "// Top Surface Modify\n";
-				Surface_Geo += "Delete {Surface { " + polygon->GetTopSurfaceID() + " }; }\n";
-				//if (polygon->EndGeo != "")
-				//	Surface_Geo += polygon->EndGeo;
-				Surface_Geo += "Plane Surface( " + polygon->GetTopSurfaceID() + " ) = { " + polygon->GetTopLoopLinesID() + ", " + Surface_LineLoops + " };\n";
+				//Surface_Geo += "Delete {Surface { " + polygon->GetTopSurfaceID() + " }; }\n";
+				Surface_Geo += polygon->GetTopSurfaceID() + " = news;\n";
+				Surface_Geo += "Plane Surface(" + polygon->GetTopSurfaceID() + ") = { " + polygon->GetTopLoopLinesID() + ", " + Surface_LineLoops + " };\n";
 			}
 			else {
 				Surface_Geo += "// Bottom Surface Modify\n";
 				Surface_Geo += "Delete {Surface { " + polygon->GetSurfaceID() + " }; }\n";
-				// Remove ??
-				//if (polygon->EndGeo != "")
-				//	Surface_Geo += polygon->EndGeo;
 				Surface_Geo += "Plane Surface(" + polygon->GetSurfaceID() + ") = { " + polygon->GetLoopLinesID() + ", " + Surface_LineLoops + " };\n";
 			}
 
@@ -2180,7 +2165,7 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems_wClipper(vector<GDSPolygon*> Poly
 		Path p;
 		
 		poly = PolygonOnLayer[i];
-		poly->Orientate();
+		poly->Orientate(); 
 		p.resize(poly->GetPoints());
 		for (size_t j = 0; j < poly->GetPoints(); j++) {
 			p[j].X = rounded(poly->GetXCoords(j) / poly->GetLayer()->Units->Unitu);
@@ -2189,54 +2174,72 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems_wClipper(vector<GDSPolygon*> Poly
 
 		AllPoly[i] = p;
 
-		/*
-		if (i == 0) {
-			c.AddPath(p, ptClip, true);
-		}
-		else {
-			c.AddPath(p, ptSubject, true);
-		}
-		*/
 	}
-	if (PolygonOnLayer.size() > 1000 && !Layer->Metal && Layer->MinSpace > 0) {
+
+	ClipperOffset co;
+	// Merge 
+	co.AddPaths(AllPoly, jtMiter, etClosedPolygon);
+	co.Execute(AllPoly, 0);
+	co.Clear();
+	vector<GDSPolygon> tmpPolyList;
+	
+	for (Paths::size_type j = 0; j < AllPoly.size(); ++j) {
+		Path polypath = AllPoly[j];
+		GDSPolygon tmpPoly;
+		poly->CopyInto(&tmpPoly);
+		tmpPoly.Clear();
+		for (size_t k = 0; k < polypath.size(); k++) {
+			Point2D P;
+			P.X = polypath[k].X * Layer->Units->Unitu;
+			P.Y = polypath[k].Y * Layer->Units->Unitu;
+			tmpPoly.AddPoint(P);
+		}
+		tmpPolyList.push_back(tmpPoly);
+	}
+
+	if (wm->mergeVia & PolygonOnLayer.size() > 10 && !Layer->Metal && Layer->MinSpace > 0) {
 		ClipperOffset co;
 		v_printf(0, "\rLayer %s merge (%zd)", Layer->Name, PolygonOnLayer.size());
 		fflush(stdout);
 		// Join Via
 		co.AddPaths(AllPoly, jtMiter, etClosedPolygon);
-		co.Execute(AllPoly, Layer->MinSpace/2.0 + 1);
+		co.Execute(AllPoly, Layer->MinSpace / 2.0 + 1);
 		co.Clear();
 		// Check timer?
 		if (wm->timer(time, 0) > Waittime) {
 			v_printf(0, "\r                                      ", Layer->Name);
-			v_printf(0, "\rLayer %s merge half Done", Layer->Name);
+			v_printf(0, "\rLayer %s merge half Done ", Layer->Name);
 			fflush(stdout);
 			wm->timer(time, 1);
 		}
 		// Shrink back
 		co.AddPaths(AllPoly, jtMiter, etClosedPolygon);
 		Paths AllPolybis;
-		co.Execute(AllPolybis, -(Layer->MinSpace/2.0 +1));
+		co.Execute(AllPolybis, -(Layer->MinSpace / 2.0 + 1));
 		co.Clear();
 		// Resize surface
 		// find Unit size
 		ClipperLib::cInt UnitSize = 0;
 		Path polypath = AllPolybis[0];
 		ClipperLib::cInt Edgelength = abs(polypath[0].X - polypath[1].X);
-		if (Edgelength < Layer->MinSpace) {
-			UnitSize = Edgelength;
+		if (Layer->UnitSize == 0) {
+			if (Edgelength < Layer->MinSpace) {
+				UnitSize = Edgelength;
+			}
+			else {
+				unsigned long n = (Edgelength + Layer->MinSpace) / (Layer->MinSpace*1.05 + Layer->MinSpace);
+				while (UnitSize <= 0 || UnitSize > Layer->MinSpace*1.05) {
+					UnitSize = (Edgelength - Layer->MinSpace*(n - 1)) / n;
+					n++;
+				}
+			}
+			v_printf(0, "\rWARNING UnitSize not specify for Layer %s auto estimation is : %zd\n", Layer->Name, UnitSize);
 		}
 		else {
-			unsigned long n = 2;
-			while (UnitSize < 0) {
-				UnitSize = (Edgelength - Layer->MinSpace*(n - 1)) / n;
-			}
+			UnitSize = Layer->UnitSize;
 		}
-		// shrink surface
-		for (Paths::size_type i = 0; i < AllPolybis.size(); ++i) {
-			Path polypath = AllPolybis[i];
-			ClipperLib::cInt C = sqrt((polypath[0].X - polypath[1].X) ^ 2 + (polypath[0].Y - polypath[1].Y) ^ 2);
-		}
+
+
 		/*for (Paths::iterator polypath_it = AllPolybis.begin(); polypath_it != AllPolybis.end(); polypath_it++) {
 			Path &polypath = polypath_it->data;
 			//ClipperLib::cInt C = sqrt((polypath[0]->X - polypath[1]->X) ^ 2 + (polypath[0]->Y - polypath[1]->Y) ^ 2);
@@ -2246,13 +2249,110 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems_wClipper(vector<GDSPolygon*> Poly
 		v_printf(0, "\rLayer %s merge Done", Layer->Name);
 		// Join Via
 		co.AddPaths(AllPolybis, jtMiter, etClosedPolygon);
-		co.Execute(AllPolybis, (Layer->MinSpace+30.0) / 2.0 + 1);
+		co.Execute(AllPolybis, (Layer->MinSpace + 30.0) / 2.0 + 1);
 		co.Clear();
 		// Shrink back
 		co.AddPaths(AllPolybis, jtMiter, etClosedPolygon);
-		co.Execute(res, -((Layer->MinSpace+30.0) / 2.0 + 1));
+		co.Execute(AllPolybis, -((Layer->MinSpace + 30.0) / 2.0 + 1));
 		co.Clear();
 		
+		// shrink surface
+		vector<size_t> NbVia;
+		NbVia.resize(AllPolybis.size());
+		vector<GDSPolygon> tmpMergePolyList;
+		for (Paths::size_type j = 0; j < AllPolybis.size(); ++j) {
+			Path polypath = AllPolybis[j];
+			GDSPolygon tmpPoly;
+			poly->CopyInto(&tmpPoly);
+			tmpPoly.Clear();
+			for (size_t k = 0; k < polypath.size(); k++) {
+				Point2D P;
+				P.X = polypath[k].X * Layer->Units->Unitu;
+				P.Y = polypath[k].Y * Layer->Units->Unitu;
+				tmpPoly.AddPoint(P);
+			}
+			tmpMergePolyList.push_back(tmpPoly);
+		}
+
+		for (size_t i = 0; i < tmpPolyList.size(); i++) {
+			GDSPolygon tmpPoly = tmpPolyList[i];
+			for (Paths::size_type j = 0; j < tmpMergePolyList.size(); ++j) {
+				GDSPolygon tmpMergePoly = tmpMergePolyList[j];
+				if (tmpMergePoly.isPolygonInside_wborders(tmpPoly)) {
+					NbVia[j] ++;
+					break;
+				}
+			}
+		}
+
+		Paths NewPolyList = AllPolybis;
+		for (Paths::size_type i = 0; i < AllPolybis.size(); ++i) {
+			Path polypath = AllPolybis[i];
+			if (polypath.size() > 4) {
+				continue;
+			}
+			ClipperLib::cInt EdgeAB = sqrt((polypath[0].X - polypath[1].X)* (polypath[0].X - polypath[1].X) + (polypath[0].Y - polypath[1].Y) * (polypath[0].Y - polypath[1].Y));
+			unsigned long n0 = (EdgeAB + Layer->MinSpace) / (UnitSize + Layer->MinSpace);
+			ClipperLib::cInt EdgeBC = sqrt((polypath[1].X - polypath[2].X)* (polypath[1].X - polypath[2].X) + (polypath[1].Y - polypath[2].Y) * (polypath[1].Y - polypath[2].Y));
+			unsigned long n1 = (EdgeBC + Layer->MinSpace) / (UnitSize + Layer->MinSpace);
+			double XSpace, YSpace;
+			if (n1*n0 != NbVia[i]) {
+				// Change Space between via
+				XSpace = Layer->MinSpace;
+				YSpace = Layer->MinSpace;
+				if (n0 < n1) {
+					if (n1 > NbVia[i] / n0) {
+						n1 = NbVia[i] / n0;
+					}
+				} else if (n0 > n1) {
+					if (n0 > NbVia[i] / n1) {
+						n0 = NbVia[i] / n1;
+					}
+				}
+			}
+			Path Newpolypath;
+			Newpolypath.resize(4);
+
+			double MaxHoleNb = 50.0;
+			size_t NbblocX = ceil(n0 / MaxHoleNb);
+			size_t NbblocY = ceil(n1 / MaxHoleNb);
+
+			for (size_t Y_index = 0; Y_index < NbblocY; Y_index++) {
+				for (size_t X_index = 0; X_index < NbblocX; X_index++) {
+					Newpolypath = polypath;
+					if (NbblocX == 1) {
+						Newpolypath[0].X = polypath[0].X - EdgeAB / 2.0 + n0*UnitSize / 2.0;
+					}
+					else {
+						Newpolypath[0].X = polypath[0].X - X_index*1.0 / (NbblocX - 1)*(EdgeAB - (n0*1.0 / NbblocX)*UnitSize);
+					}
+					if (NbblocY == 1) {
+						Newpolypath[0].Y = polypath[0].Y - EdgeBC / 2.0 + n1*UnitSize / 2.0;
+					}
+					else {
+						Newpolypath[0].Y = polypath[0].Y - Y_index*1.0 / (NbblocY - 1)*(EdgeBC - (n1*1.0 / NbblocY)*UnitSize);
+					}
+					Newpolypath[1].X = Newpolypath[0].X - (n0*1.0 / NbblocX)*UnitSize;
+					Newpolypath[1].Y = Newpolypath[0].Y;
+					Newpolypath[2].X = Newpolypath[1].X;
+					Newpolypath[2].Y = Newpolypath[1].Y - (n1*1.0 / NbblocY)*UnitSize;
+					Newpolypath[3].X = Newpolypath[0].X;
+					Newpolypath[3].Y = Newpolypath[2].Y;
+
+					if (Y_index == 0 && X_index == 0) {
+						NewPolyList[i] = Newpolypath;
+					}
+					else {
+						NewPolyList.push_back(Newpolypath);
+					}
+				}
+			}
+		}
+		AllPolybis = NewPolyList;
+		co.AddPaths(AllPolybis, jtMiter, etClosedPolygon);
+		co.Execute(res, 0);
+		co.Clear();
+
 	}
 	else {
 		/*
@@ -2264,11 +2364,11 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems_wClipper(vector<GDSPolygon*> Poly
 		ClipperOffset co;
 		// Join 
 		co.AddPaths(AllPoly, jtMiter, etClosedPolygon);
-		co.Execute(AllPoly, 1);
+		co.Execute(AllPoly, 0.1);
 		co.Clear();
 		// Shrink back
 		co.AddPaths(AllPoly, jtMiter, etClosedPolygon);
-		co.Execute(res, -1);
+		co.Execute(res, -0.1);
 		co.Clear();
 	}
 	//pftEvenOdd, pftNonZero, pftPositive, pftNegative
@@ -2327,7 +2427,7 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems_wClipper(vector<GeoPolygon*> Poly
 			hole_path.resize(hole->GetPoints());
 			for (size_t k = 0; k < hole->GetPoints(); k++) {
 				hole_path[k].X = rounded(hole->GetXCoords(hole->GetPoints()-k-1) / hole->GetLayer()->Units->Unitu);
-				hole_path[k].Y = rounded(hole->GetYCoords(hole->GetPoints() - k - 1) / hole->GetLayer()->Units->Unitu);
+				hole_path[k].Y = (cInt) rounded(hole->GetYCoords(hole->GetPoints() - k - 1) / hole->GetLayer()->Units->Unitu);
 			}
 			if (i == 0) {
 				c.AddPath(hole_path, ptClip, true);
@@ -2413,7 +2513,7 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems,
 				continue;
 		PolygonOnLayer.push_back(poly);
 	}
-
+	
 	Clipper c;
 	PolyTree res;
 
@@ -2448,7 +2548,7 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems,
 	for (size_t i = 0; i < PolygonOnLayer.size(); i++)
 	{
 		poly = PolygonOnLayer[i];
-
+		
 		// Eclude if list as remove
 		if (PolygonRemoveItems.find(poly) != PolygonRemoveItems.end()) {
 			continue;
@@ -2458,7 +2558,6 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems,
 		PolygonItemsOutSet.insert(poly);
 		
 		//PolygonItemsChecked.push_back(poly);
-
 		vector<GDSPolygon*> PolygonItemstoCheck = PolygonItemsChecked.GetPolyNear(*poly->GetBBox());
 		
 
@@ -2486,7 +2585,7 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems,
 				continue;
 			
 			//if (polygon->isPolygonInside_wborders(*poly) && !GDSPolygon::intersect(poly, polygon)) {
-			if (polygon->isPolygonInside_wborders(*poly)) {
+			if (polygon->isPolygonInside_wborders(*poly) ) {
 				// Remove poly
 				//polygon->Merge(poly);
 				//PolygonMerge.push_back(polygon);
@@ -2496,7 +2595,7 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems,
 			}			
 			
 			//if (poly->isPolygonInside_wborders(*polygon) && !GDSPolygon::intersect(poly, polygon)) {
-			if (poly->isPolygonInside_wborders(*polygon)) {
+			if (poly->isPolygonInside_wborders(*polygon) ) {
 				// Remove polygon
 				//poly->Merge(polygon);
 				//PolygonMerge.push_back(poly);
@@ -2524,8 +2623,8 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems,
 					
 				}
 				GDSBB prevBB = *poly->GetBBox();
-					poly->Merge(polygon);
-					PolygonRemoveItems.insert(polygon);
+				poly->Merge(polygon);
+				PolygonRemoveItems.insert(polygon);
 				// Update 
 				PolygonItemsChecked.Remove(polygon);
 				if (PolygonItemsChecked.Update(poly, prevBB)) {
@@ -2542,6 +2641,7 @@ vector<GeoPolygon*>  Output::SimplifyPolyItems(vector<GDSPolygon*> PolygonItems,
 			}
 		}
 	}
+
 
 	// Remove useless polygons
 	if (PolygonRemoveItems.size() > 0) {

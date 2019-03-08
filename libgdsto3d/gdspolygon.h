@@ -132,6 +132,7 @@ public:
 
 	static bool intersect(const GDSBB& BB1, const GDSBB& BB2);
 	bool intersect_wborders(const GDSBB & BB1, const GDSBB & BB2);
+	bool intersect_wborders(const GDSBB & BB1, const GDSBB & BB2, float margin);
 	//static bool intersect(const GDSBB& BB1, const GDS3DBB& BB2);
 	bool operator<(const GDSBB & BB) const;
 	bool operator==(const GDSBB & BB)const;
@@ -189,6 +190,8 @@ public:
 	bool isBBInside(const GDS3DBB & BB);
 
 	bool isBBInside_wborders(const GDS3DBB & BB);
+
+	bool isBBInside_wborders(const GDS3DBB & BB, float margin);
 
 	static bool intersect(const GDS3DBB& BB1, const GDS3DBB& BB2);
 	static bool intersect(const GDSBB& BB1, const GDS3DBB& BB2);
@@ -259,6 +262,8 @@ private:
 	bool intersect(const Edge & E);
 	bool onLine(const Point2D& A, const Point2D& B, const Point2D& P);
     bool insideTriangle(const Point2D& A, const Point2D& B, const Point2D& C,const Point2D& P);
+
+	bool insideTriangle_woborder(const Point2D & A, const Point2D & B, const Point2D & C, const Point2D & P);
 
 public:
         GDSPolygon() {_Layer = NULL; _NetName = NULL;};

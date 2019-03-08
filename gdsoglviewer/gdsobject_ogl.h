@@ -48,6 +48,7 @@ private:
 	AA_BOUNDING_BOX bbox; // 3D Bounding box
 	unsigned long	numtris;
 	size_t    PolyItemsCurIndex;
+	float _Quality;
 
 public:
 	vector<render_layer_t> layer_list;	
@@ -65,8 +66,8 @@ public:
 
 	void PrepareRender(MATRIX4X4 projection_view, MATRIX4X4 object_view);
 	void EndRender();
-	void RenderList(MATRIX4X4 object_view, bool HQ);
-	void RenderList(MATRIX4X4 object_view, bool HQ, bool Update);
+	void RenderList(MATRIX4X4 object_view, bool HQ, float fps);
+	void RenderList(MATRIX4X4 object_view, float Quality, bool Update);
 	void RenderOGLSRefs(MATRIX4X4 object_view, bool HQ);
 	void RenderOGLARefs(MATRIX4X4 object_view, bool HQ);
 

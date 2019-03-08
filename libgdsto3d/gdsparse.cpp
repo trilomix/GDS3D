@@ -1202,7 +1202,7 @@ class GDSProcess *GDSParse::GetProcess() {
 	}
   return NULL;
 }
-
+// TODO Add multi thread for this
 void GDSParse::ComputeVirtualLayer() {
 	char *Layer1ID;
 	char *Layer2ID;
@@ -1260,6 +1260,10 @@ void GDSParse::ComputeVirtualLayer() {
 void
 GDSParse::findPolyOnLayer(GDSObject *obj, GDSMat object_mat, ProcessLayer *layer1, ProcessLayer *layer2, ProcessLayer *layer)
 {
+	if (obj == NULL) {
+		v_printf(2, "  Error could not find Top Cell \n");
+		return;
+	}
 	GDSPolygon *poly;
 
 	GDS3DBB boundary = obj->GetTotal3DBoundary();

@@ -707,7 +707,7 @@ void GDSParse_ogl::gl_draw_world(int width, int height, bool HQ)
 	total_tris = 0;
 
 	_topcell->PrepareRender(projection, view);
-	_topcell->RenderList(view, HQ);
+	_topcell->RenderList(view, HQ, _fps);
 	if(!substrate)
 		buildSubstrate();
     if(sub_layer)
@@ -841,8 +841,10 @@ void GDSParse_ogl::gl_event( int event, int data, int xpos, int ypos , bool shif
 					}
 					current_layer = current_layer->Next;
 				}
-				if(i > -1)
+				if (i > -1) {
 					wm->getProcess()->ChangeVisibility(wm->getProcess()->GetLayer(i), true);
+					wm->getWorld()->_Objects->ClearNetList();
+				}
 			}
 			else if(alt)
 			{
@@ -858,8 +860,10 @@ void GDSParse_ogl::gl_event( int event, int data, int xpos, int ypos , bool shif
 					}
 					current_layer = current_layer->Next;
 				}
-				if(i > -1)
+				if (i > -1) {
 					wm->getProcess()->ChangeVisibility(wm->getProcess()->GetLayer(i), false);
+					wm->getWorld()->_Objects->ClearNetList();
+				}
 			}
 			else if(shift) {
 				_vy2 -= 5.0f*_speed_factor/10.0;
@@ -880,8 +884,10 @@ void GDSParse_ogl::gl_event( int event, int data, int xpos, int ypos , bool shif
 						i = current_layer->Index;
 					current_layer = current_layer->Next;
 				}
-				if(i > -1)
+				if (i > -1) {
 					wm->getProcess()->ChangeVisibility(wm->getProcess()->GetLayer(i), false);
+					wm->getWorld()->_Objects->ClearNetList();
+				}
 			}
 			else if(alt)
 			{
@@ -894,8 +900,10 @@ void GDSParse_ogl::gl_event( int event, int data, int xpos, int ypos , bool shif
 						i = current_layer->Index;
 					current_layer = current_layer->Next;
 				}
-				if(i > -1)
+				if (i > -1) {
 					wm->getProcess()->ChangeVisibility(wm->getProcess()->GetLayer(i), true);
+					wm->getWorld()->_Objects->ClearNetList();
+				}
 			}
 			else if (shift) {
 				_vy2 -= -5.0f*_speed_factor / 10.0;

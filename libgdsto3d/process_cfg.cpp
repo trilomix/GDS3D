@@ -116,7 +116,8 @@ void GDSProcess::ParseFile(char *processfile, int cur_layer, float offset = 0, b
 	bool got_filter = false;
 	bool got_metal = false;
 	bool got_minspace = false;
-	bool got_show = false; 
+	bool got_unitsize = false;
+	bool got_show = false;
 	bool got_shortkey = false;
 	/* End State variables */
 	bool showing;
@@ -196,6 +197,7 @@ void GDSProcess::ParseFile(char *processfile, int cur_layer, float offset = 0, b
 				got_filter = false;
 				got_metal = false;
 				got_minspace = false;
+				got_unitsize = false;
 				got_show = false;
 				got_shortkey = false;
 				current_element++;
@@ -229,6 +231,7 @@ void GDSProcess::ParseFile(char *processfile, int cur_layer, float offset = 0, b
 				NewLayer.Filter = 0.0;
 				NewLayer.Metal = 0;
 				NewLayer.MinSpace = 0.0;
+				NewLayer.UnitSize = 0.0;
 				NewLayer.Show = false;
 				NewLayer.Alt = false;
 				NewLayer.Ctrl = false;
@@ -481,6 +484,24 @@ void GDSProcess::ParseFile(char *processfile, int cur_layer, float offset = 0, b
 					NewLayer.MinSpace = GetLineValue(line, (char*)"MinSpace: ");
 					got_minspace = true;
 				}
+			} else if (strstr(line, "UnitSize:")) {
+				if (!in_layer) {
+					v_printf(1, "Error: UnitSize definition outside of LayerStart and LayerEnd on line %d of process file.\n", current_line);
+					_Valid = false;
+					if (NewLayer.Name) {
+						delete[] NewLayer.Name;
+						NewLayer.Name = NULL;
+					}
+					fclose(pptr);
+					return;
+				}
+				if (got_unitsize) {
+					v_printf(1, "Warning: Duplicate UnitSize definition on line %d of process file. Ignoring new definition.\n", current_line);
+				}
+				else {
+					NewLayer.UnitSize = GetLineValue(line, (char*)"UnitSize: ");
+					got_unitsize = true;
+				}
 			}else if(strstr(line, "Show:")){
 				if(!in_layer){
 					v_printf(1, "Error: Show definition outside of LayerStart and LayerEnd on line %d of process file.\n", current_line);
@@ -724,6 +745,7 @@ void GDSProcess::AddLayer(int Layer, int Datatype)
 	NewLayer.Filter = 0.0;
 	NewLayer.Metal = 0;
 	NewLayer.MinSpace = 0.0;
+	NewLayer.UnitSize = 0.0;
 	NewLayer.Show = false;
 	NewLayer.Alt = false;
 	NewLayer.Ctrl = false;
@@ -901,6 +923,7 @@ void GDSProcess::AddLayer(struct ProcessLayer *NewLayer, bool flip)
 	layer->Filter = NewLayer->Filter;
 	layer->Metal = NewLayer->Metal;
 	layer->MinSpace = NewLayer->MinSpace;
+	layer->UnitSize = NewLayer->UnitSize;
 	layer->Index = NewLayer->Index;
 	layer->Alt = NewLayer->Alt;
 	layer->Ctrl = NewLayer->Ctrl;
@@ -972,6 +995,7 @@ bool GDSProcess::Save(const char *filename)
 		fprintf(fptr, "Filter: 0.0\n");
 		fprintf(fptr, "Metal: 0\n");
 		fprintf(fptr, "MinSpace: 0\n");
+		fprintf(fptr, "UnitSize: 0\n");
 		fprintf(fptr, "Show: 1\n");
 		fprintf(fptr, "LayerEnd\n\n");
 

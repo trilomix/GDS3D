@@ -224,10 +224,15 @@ bool GDSBB::intersect(const GDSBB& BB1, const GDSBB& BB2)
 
 bool GDSBB::intersect_wborders(const GDSBB& BB1, const GDSBB& BB2)
 {
+	return intersect_wborders( BB1, BB2, 0.000f);
+}
+
+bool GDSBB::intersect_wborders(const GDSBB& BB1, const GDSBB& BB2, float margin)
+{
 	// How much of a margin??
-	if ((BB1.min.X - BB2.max.X) > 0.000f || (BB2.min.X - BB1.max.X) > 0.000f)
+	if ((BB1.min.X - BB2.max.X) > margin || (BB2.min.X - BB1.max.X) > margin)
 		return false;
-	if ((BB1.min.Y - BB2.max.Y) > 0.000f || (BB2.min.Y - BB1.max.Y) > 0.000f)
+	if ((BB1.min.Y - BB2.max.Y) > margin || (BB2.min.Y - BB1.max.Y) > margin)
 		return false;
 
 	return true;
@@ -337,11 +342,16 @@ bool GDS3DBB::isBBInside(const GDS3DBB& BB)
 
 bool GDS3DBB::isBBInside_wborders(const GDS3DBB& BB)
 {
-	if ((BB.max.X - max.X) > 0.000f || (min.X - BB.min.X) > 0.000f)
+	return isBBInside_wborders(BB, 0.001f);
+}
+
+bool GDS3DBB::isBBInside_wborders(const GDS3DBB& BB, float margin)
+{
+	if ((BB.max.X - max.X) >= margin || (min.X - BB.min.X) >= margin)
 		return false;
-	if ((BB.max.Y - max.Y) > 0.000f || (min.Y - BB.min.Y) > 0.000f)
+	if ((BB.max.Y - max.Y) >= margin || (min.Y - BB.min.Y) >= margin)
 		return false;
-	if ((BB.max.Z - max.Z) > 0.000f || (min.Z - BB.min.Z) > 0.000f)
+	if ((BB.max.Z - max.Z) >= margin || (min.Z - BB.min.Z) >= margin)
 		return false;
 
 	return true;
@@ -522,7 +532,7 @@ GDSPolygon::GDSPolygon(double Height, double Thickness, struct ProcessLayer *Lay
 	_Thickness = Thickness;
 	_Layer = Layer;
 	
-	epsilon = 0.001; // Default precision of 1nm
+	epsilon = Layer->Units->Unitu; // Default precision of 1nm
 	_NetName = NULL;
 	SetNetName((char*)"None");
 }
@@ -533,7 +543,7 @@ GDSPolygon::GDSPolygon(struct ProcessLayer *Layer)
 	_Thickness = Layer->Thickness*Layer->Units->Unitu;
 	_Layer = Layer;
 
-	epsilon = 0.001; // Default precision of 1nm
+	epsilon = Layer->Units->Unitu; // Default precision of 1nm
 	_NetName = NULL;
 	SetNetName((char*)"None");
 }
@@ -801,10 +811,18 @@ GDSPolygon::Tesselate( bool force)
 				}
 
 				// Check if in triangle
-                if(insideTriangle(_Coords[V[a]], _Coords[V[b]], _Coords[V[c]], _Coords[V[k]]))
-                {
-                    flagged = true;
-                    break;
+				if (insideTriangle_woborder(_Coords[V[a]], _Coords[V[b]], _Coords[V[c]], _Coords[V[k]])) {
+					flagged = true;
+					break;
+				}
+				else {
+					if (V[k] > V[c] && area(_Coords[V[a]], _Coords[V[c]], _Coords[V[k]]) < epsilon / 10) {
+						// Check if the next V[k] point is align with the current triangle so so we should invalid the current 
+						if (insideTriangle(_Coords[V[a]], _Coords[V[b]], _Coords[V[c]], _Coords[V[k]])) {
+							flagged = true;
+							break;
+						}
+					}
                 }
             }
             
@@ -937,23 +955,23 @@ GDSPolygon::isSimple()
         dy1 = _Coords[(j+1)%_Coords.size()].Y - _Coords[j].Y;
         
         dx2 = _Coords[(j+2)%_Coords.size()].X - _Coords[(j+1)%_Coords.size()].X;
-        dy2 = _Coords[(j+2)%_Coords.size()].Y - _Coords[(j+1)%_Coords.size()].Y;
+        dy2 = _Coords[(j + 2) % _Coords.size()].Y - _Coords[(j + 1) % _Coords.size()].Y;
         
         nz = dx1*dy2 - dy1*dx2;
         
-        if(nz > 0.0000001f)
-            numPos+=1;
-        if(nz < -0.0000001f)
-            numNeg+=1;
-    }
-    
-    if(numPos>0 && numNeg>0)
-        return false;
-    
-    return true;
+        if (nz > 0.0000001f)
+        numPos += 1;
+        if (nz < -0.0000001f)
+	        numNeg += 1;
+	}
+
+	if (numPos > 0 && numNeg > 0)
+		return false;
+
+	return true;
 }
 
-bool 
+bool
 GDSPolygon::isPointInside(const Point2D& P)
 {
 	/*
@@ -1104,6 +1122,9 @@ bool
 GDSPolygon::isPolygonInside(const GDSPolygon& poly) {
 	// Check if the "poly" is inside "this"
 	if (this->bbox.isBBInside(poly.bbox)) {
+		if (_Coords.size() <= 4) {
+			return true;
+		}
 		//Check all poly point
 		for (unsigned int i = 0; i<poly._Coords.size(); i++)
 		{
@@ -1619,7 +1640,7 @@ GDSPolygon::intersect(GDSPolygon *Poly, const Point2D& A, const Point2D& B ) {
 	return false;
 }
 
-bool 
+bool
 GDSPolygon::intersect(const Edge& E) {
 	Edge CurEdge;
 
@@ -1721,15 +1742,15 @@ GDSPolygon::insideTriangle(const Point2D& A, const Point2D& B, const Point2D& C,
     double ax, ay, bx, by, cx, cy, apx, apy, bpx, bpy, cpx, cpy;
     double cCROSSap, bCROSScp, aCROSSbp;
 
-	// Exclude points on vertices
+/*	// Exclude points on vertices
 	if(A.X == P.X && A.Y == P.Y)
 		return false;
 	if(B.X == P.X && B.Y == P.Y)
 		return false;
 	if(C.X == P.X && C.Y == P.Y)
 		return false;
-    
-    ax = C.X - B.X;  ay = C.Y - B.Y;
+*/   
+/*    ax = C.X - B.X;  ay = C.Y - B.Y;
     bx = A.X - C.X;  by = A.Y - C.Y;
     cx = B.X - A.X;  cy = B.Y - A.Y;
     apx = P.X - A.X;  apy = P.Y - A.Y;
@@ -1740,9 +1761,77 @@ GDSPolygon::insideTriangle(const Point2D& A, const Point2D& B, const Point2D& C,
     cCROSSap = cx * apy - cy * apx;
     bCROSScp = bx * cpy - by * cpx;
     
-    return ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
-    
+    bool res ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
+*/    
     //return ((aCROSSbp >= epsilon) && (bCROSScp >= epsilon) && (cCROSSap >= epsilon));
+	vector<Point2D> Coords;
+	Coords.push_back(A);
+	Coords.push_back(B);
+	Coords.push_back(C);
+	size_t i, j;
+	bool c = false;
+
+	for (i = 0, j = Coords.size() - 1; i < Coords.size(); j = i++) {
+		if (onLine(Coords[i], Coords[j], P)) {
+			c = true;
+			break;
+		}
+		if (((Coords[i].Y > P.Y) != (Coords[j].Y > P.Y)) &&
+			(P.X < (Coords[j].X - Coords[i].X) * (P.Y - Coords[i].Y) / (Coords[j].Y - Coords[i].Y) + Coords[i].X))
+			c = !c;
+	}
+//	assert(res == c);
+	return c;
+
+}
+
+bool
+GDSPolygon::insideTriangle_woborder(const Point2D& A, const Point2D& B, const Point2D& C, const Point2D& P)
+{
+	double ax, ay, bx, by, cx, cy, apx, apy, bpx, bpy, cpx, cpy;
+	double cCROSSap, bCROSScp, aCROSSbp;
+
+	// Exclude points on vertices
+	if (A.X == P.X && A.Y == P.Y)
+		return false;
+	if (B.X == P.X && B.Y == P.Y)
+		return false;
+	if (C.X == P.X && C.Y == P.Y)
+		return false;
+
+/*	ax = C.X - B.X;  ay = C.Y - B.Y;
+	bx = A.X - C.X;  by = A.Y - C.Y;
+	cx = B.X - A.X;  cy = B.Y - A.Y;
+	apx = P.X - A.X;  apy = P.Y - A.Y;
+	bpx = P.X - B.X;  bpy = P.Y - B.Y;
+	cpx = P.X - C.X;  cpy = P.Y - C.Y;
+
+	aCROSSbp = ax * bpy - ay * bpx;
+	cCROSSap = cx * apy - cy * apx;
+	bCROSScp = bx * cpy - by * cpx;
+
+	bool res((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
+*/
+	//return ((aCROSSbp >= epsilon) && (bCROSScp >= epsilon) && (cCROSSap >= epsilon));
+	vector<Point2D> Coords;
+	Coords.push_back(A);
+	Coords.push_back(B);
+	Coords.push_back(C);
+	size_t i, j;
+	bool c = false;
+
+	for (i = 0, j = Coords.size() - 1; i < Coords.size(); j = i++) {
+		if (onLine(Coords[i], Coords[j], P)) {
+			c = false;
+			break;
+		}
+		if (((Coords[i].Y > P.Y) != (Coords[j].Y > P.Y)) &&
+			(P.X < (Coords[j].X - Coords[i].X) * (P.Y - Coords[i].Y) / (Coords[j].Y - Coords[i].Y) + Coords[i].X))
+			c = !c;
+	}
+//	assert(res == c);
+	return c;
+
 }
 
 void GDSPolygon::transformPoints(const GDSMat& M)
@@ -1771,7 +1860,7 @@ bool GDSPolygon::intersect(GDSPolygon *P1, GDSPolygon *P2)
 	// Bounding box intersection
 	if(!GDSBB::intersect(P1->bbox, P2->bbox))
 		return false;
-
+	
 	// Bounding intersection
 	for (size_t i = 0; i < P1->GetPoints(); i++)
 	{

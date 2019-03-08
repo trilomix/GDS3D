@@ -39,7 +39,7 @@ The program can be started from a command line using the following syntax:
 Required parameters:
         -p      Process definition file
         -i      GDSII file
-Or
+   Or
         -a      Assembly definition file
 
 Optional parameters:
@@ -77,7 +77,7 @@ The process definition files contain the physical properties of the process bein
         Metal: 1                  # Metal clickable in net highlighting mode (0 for VIA)
         Shortkey: 1               # Shortcut to toggle layer visibility
         Show: 1                   # Set to 0 for layers that are not to be rendered
-        Vitual: 10 AND 11         # Define a new layer where 10 AND 11 exist     
+        Virtual: 10 AND 11        # Define a new layer where 10 AND 11 exist     
         Material: Al              # Define Material of layer for gmsh output only
         OutMaterial: SiO2         # Define OutMaterial of layer for gmsh output only
         MinSpace: 350             # Define Minimum space to merge via for gmsh output only   

@@ -111,13 +111,12 @@ void clip::execute(vector<GDSGroup*> FullGDSItems){
 								}
 							}
 						}
-			layer_cnt++;
-		}
-					else {
+			        layer_cnt++;
+		            } else {
 						AddPoly(add_poly, true, &vertices, &MeshPoints);
-			layer_cnt++;
-		}
-	}
+						layer_cnt++;
+		            }
+	            }
 
 	}
 	z_div = layer_cnt+1;
@@ -213,8 +212,11 @@ void clip::execute(vector<Point3D> vertices, vector<GoePolyPoint> MeshPoints, si
   count = 0;
   loop.start();
   do {
+	  //v_printf(0, "Hello I'm %d \n", omp_get_thread_num());
+	  //v_printf(0, "We are %d\n", omp_get_num_threads());
 	  std::vector<int> neighbors;
 	  pid = loop.pid();
+	  //GoePolyPoint Poly_P = MeshPoints[IDs2[count] / 2];
 	  GoePolyPoint Poly_P = MeshPoints[IDs2[IDs[pid]] / 2];
 	  if (Poly_P.poly->GetLayer() != CurLayer) {
 		  count++;
@@ -224,8 +226,24 @@ void clip::execute(vector<Point3D> vertices, vector<GoePolyPoint> MeshPoints, si
 	  cell.neighbors(neighbors);
 	  assert(IDs[pid] == count);
 	  
+	  /*
+	  bool Stop = false;
+	  if (Poly_P.poly->GetCoords(Poly_P.index) == Point2D(1039.29, 1510.78)) {
+		  Stop = true;
+	  }
+	  if (Stop) {
+	  //v_printf(1, "%2d %2d", counti, IDs2[count]);
+		  //v_printf(1, "(%8.7g, %8.7g, %8.7g)", generators[count].X, generators[count].Y, generators[count].Z);
+		  v_printf(1, "(%8.7g, %8.7g, %8.7g)", generators[IDs[pid]].X, generators[IDs[pid]].Y, generators[IDs[pid]].Z);
+		  v_printf(1, "\n");
+	  }*/
 	  for (j = 0; j < neighbors.size(); j++) {
 		  if (neighbors[j] >= 0) {
+			  /*
+			  if (Stop) {
+				  v_printf(1, " %2d", neighbors[j]);
+				  v_printf(1, "(%8.7g, %8.7g, %8.7g)", generators[IDs[neighbors[j]]].X, generators[IDs[neighbors[j]]].Y, generators[IDs[neighbors[j]]].Z);
+			  }*/
 			  GoePolyPoint Poly_P_Neighbor = MeshPoints[neighbors[j] / 2];
 
 			  // Add only next Upper and lower Layers
@@ -255,3 +273,14 @@ void clip::execute(vector<Point3D> vertices, vector<GoePolyPoint> MeshPoints, si
 	  
   
 }
+/*
+double clip::min(double a,double b){
+  if(a<b) return a;
+  else return b;
+}
+
+double clip::max(double a,double b){
+  if(a>b) return a;
+  else return b;
+}
+*/

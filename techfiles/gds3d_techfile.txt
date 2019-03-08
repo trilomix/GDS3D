@@ -1,0 +1,35 @@
+LayerStart: Substrate
+Layer: 255
+Height: -900
+Thickness: 900
+Red: 0.0
+Green: 1.0
+Blue: 1.0
+Filter: 0.5
+Metal: 0
+Show: 0
+LayerEnd
+
+LayerStart: Cuivre top (L1)
+Layer: 5 
+Height: 1547
+Thickness: 35
+Red: 0.25
+Green: 0.25
+Blue: 0.25
+Filter: 0.5
+Show: 1
+LayerEnd
+
+LayerStart: Cuivre face interne (L2)
+Layer: 6
+Height: 1326
+Thickness: 18
+Red: 0.5
+Green: 0.5
+Blue: 0.5
+Filter: 0.0
+Show: 1
+LayerEnd
+
+

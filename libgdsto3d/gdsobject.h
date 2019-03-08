@@ -187,6 +187,7 @@ public:
 	char *GetName();
 	char * GetGDSName();
 	bool referencesToObject(char *name);
+	bool referencesToObject(GDSObject * object);
 	char *GetProcessName();
 	bool Has3DBBox();
 	void ResetBBox();

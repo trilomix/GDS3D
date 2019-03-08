@@ -36,6 +36,7 @@ WindowManager::WindowManager()
 	fullscreen = 0;
 	update = 1;
 	assembly = false;
+	mergeVia = true;
 
 	world = NULL;
 	process = NULL;
@@ -69,6 +70,7 @@ void WindowManager::printUsage()
 	v_printf(1, " -f\t\tFullscreen mode\n");
 	v_printf(1, " -u\t\tDon't check GDS for update\n");
 	v_printf(1, " -h\t\tDisplay this help\n");
+	v_printf(1, " -m\t\tDon't merge Via\n\n");
 	v_printf(1, " -v\t\tVerbose output\n\n");
 }
 
@@ -135,6 +137,8 @@ bool WindowManager::commandLineParameters(int argc, char *argv[])
 				}
 			}else if(strncmp(argv[i], "-v", strlen("-v"))==0){
 				verbose_output++;
+			} else if (strncmp(argv[i], "-m", strlen("-v")) == 0) {
+				mergeVia = false;
 			}else if(strncmp(argv[i], "-u", strlen("-u"))==0){
 				update=0;
 			}else{
@@ -186,8 +190,19 @@ bool WindowManager::commandLineParameters(int argc, char *argv[])
 		}
 		return ans;
 
-	} else 
-	return GDSInit(processfile, gdsfile, topcell);
+	} else {
+		if (gdsfile == NULL) {
+			v_printf(-1, "Error: No gds input given.\n");
+			printUsage();
+			return false; // 1
+		}
+		if (processfile == NULL) {
+			v_printf(-1, "Error: No process file specified.\n");
+			printUsage();
+			return false; // 1
+		}
+		return GDSInit(processfile, gdsfile, topcell);
+	}
 	
 }
 

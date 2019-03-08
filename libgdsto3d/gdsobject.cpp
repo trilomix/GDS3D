@@ -816,6 +816,30 @@ GDSObject::referencesToObject(char *name)
 	return false;
 }
 
+bool
+GDSObject::referencesToObject(GDSObject * object)
+{
+	//SRefs
+	for (unsigned int i = 0; i < SRefItems.size(); i++)
+	{
+		SRefElement *sref = SRefItems[i];
+
+		if (sref->object == object)
+			return true;
+	}
+
+	//ARefs
+	for (unsigned int i = 0; i < ARefItems.size(); i++)
+	{
+		ARefElement *aref = ARefItems[i];
+
+
+		if (aref->object == object)
+			return true;
+	}
+
+	return false;
+}
 char * GDSObject::GetProcessName() {
 	if (PolygonItems.size() > 0)
 		return PolygonItems[0]->GetLayer()->ProcessName;
@@ -905,6 +929,9 @@ void GDSObject::intersectPoly(GDSPolygon *poly)
 	for (unsigned int i = 0; i < PolygonToCheckItems.size(); i++)
 	{
 		target_poly = PolygonToCheckItems[i];
+
+		if (target_poly == poly)
+			continue;
 
 		if (!target_poly->GetLayer()->Show)
 			continue;
@@ -1013,11 +1040,18 @@ Nets GDSObject::GetNetlist()
 
 void GDSObject::CleanNetList() {
 	Object_Nets.CleanNetName();
+	bool Modif = false;
 	for(size_t i =0; i< PolygonItems.size(); i++) {
 		
-		PolygonItems[i]->SetNetName((char*)"None");
+		if (strcmp(PolygonItems[i]->GetNetName(), "None") != 0) {
+			PolygonItems[i]->SetNetName((char*)"None");
+			Modif = true;
+		}
 	}
-	pool_poly.ClearPolys();
+	if (Modif) {
+		pool_poly.ClearPolys();
+		checked_poly.clear();
+	}
 }
 
 // Net Class
@@ -1339,16 +1373,16 @@ bool PolygonSort::Remove(GDSPolygon * poly, GDSBB polyBBox)
 	GDSBB cur_BB;
 	PolySpace PolyArea;
 	for (map<GDSBB, PolySpace>::iterator BB_it = PolyBySpace.begin(); BB_it != PolyBySpace.end(); ++BB_it) {
-		GDSBB cur_BB = BB_it->first;
+		cur_BB = BB_it->first;
 		if (cur_BB.isBBInside_wborders( polyBBox )) {
 			polyList = BB_it->second.polys;
 			if (std::find(polyList.begin(), polyList.end(), poly) != polyList.end()) {
 				RemoveDone = BB_it->second.Remove(poly);
 				if (RemoveDone) {
 					PolyArea = BB_it->second;
-				break;
+					break;
+				}
 			}
-		}
 		}
 
 		if (BB_it->second.polys.size() == 0) {
@@ -1411,7 +1445,8 @@ vector<GDSPolygon*> PolygonSort::GetPolyNear(GDSBB BBox)
 	vector<GDSPolygon*> polycheck_list;
 	for (map<GDSBB, PolySpace>::iterator BB_it = PolyBySpace.begin(); BB_it != PolyBySpace.end(); ++BB_it) {
 		GDSBB cur_BB = BB_it->first;
-		if (cur_BB.intersect_wborders(BBox, cur_BB)) {
+		// Add margin to catch side by side items
+		if (cur_BB.intersect_wborders(BBox, cur_BB, 0.01f)) {
 			polycheck_list = BB_it->second.polys;
 			for (size_t i = 0; i < polycheck_list.size(); i++) {
 				GDSPolygon *cur_poly = polycheck_list[i];

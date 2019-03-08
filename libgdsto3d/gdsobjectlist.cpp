@@ -161,7 +161,7 @@ bool GDSObjectList::FindObject(GDSObject * object) {
 	{
 		GDSObject *obj = objects[j];
 
-		if (obj->referencesToObject(object->GetName()))
+		if (obj->referencesToObject(object))
 		{
 			return true;
 		}

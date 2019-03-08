@@ -71,6 +71,7 @@ void init_render()
 GDSObject_ogl::GDSObject_ogl(char *Name, char *gdsName) : GDSObject(Name,gdsName){
 	PolyItemsCurIndex = 0;
 	numtris = 0;
+	_Quality = 1;
 }
 
 GDSObject_ogl::~GDSObject_ogl()
@@ -404,11 +405,23 @@ void GDSObject_ogl::UploadToVRAM(bool Update)
 #define  Pr  .299
 #define  Pg  .587
 #define  Pb  .114
-void GDSObject_ogl::RenderList(MATRIX4X4 object_view, bool HQ)
+void GDSObject_ogl::RenderList(MATRIX4X4 object_view, bool HQ, float fps)
 {
-	RenderList(object_view, HQ, false);
+	if (fps>10.0) {
+		_Quality = 10.0;
+		RenderList(object_view, 10.0, false);
+	} else {
+		if (abs(fps) > _Quality*5) {
+			RenderList(object_view, _Quality, false);
+			_Quality = fps;
+		} else { 
+			_Quality = fps;
+			RenderList(object_view, fps, false); 
+		}
+		
+	}
 }
-void GDSObject_ogl::RenderList(MATRIX4X4 object_view, bool HQ, bool Update)
+void GDSObject_ogl::RenderList(MATRIX4X4 object_view, float Quality, bool Update)
 {
 	struct ProcessLayer *layer;
     
@@ -428,7 +441,8 @@ void GDSObject_ogl::RenderList(MATRIX4X4 object_view, bool HQ, bool Update)
     // Go to sub cells
 	MATRIX4X4 M;
 	for (unsigned int i = 0; i < refs.size(); i++) {
-			((GDSObject_ogl*)refs[i]->object)->RenderList(object_view * MATRIX4X4(refs[i]->mat[0], refs[i]->mat[1], 0.0f, 0.0f, refs[i]->mat[2], refs[i]->mat[3], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, refs[i]->mat[4], refs[i]->mat[5], 0.0f, 1.0f), HQ);
+			((GDSObject_ogl*)refs[i]->object)->RenderList(object_view * MATRIX4X4(refs[i]->mat[0], refs[i]->mat[1], 0.0f, 0.0f, refs[i]->mat[2], refs[i]->mat[3], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, refs[i]->mat[4], refs[i]->mat[5], 0.0f, 1.0f), 
+				Quality, false);
 	}
 
 	// Frustum
@@ -470,7 +484,7 @@ void GDSObject_ogl::RenderList(MATRIX4X4 object_view, bool HQ, bool Update)
 		// Visibility of small objects
 		float zrel;
 
-		if(HQ)
+		if(Quality >= 10.0 )
 		{
 			zrel = (0.00075f/4.0f) / fabs(layer_list[i].largest_dimension / distance);
 			if(zrel > 1.0f)
@@ -479,10 +493,10 @@ void GDSObject_ogl::RenderList(MATRIX4X4 object_view, bool HQ, bool Update)
 		else
 		{
 			zrel = 0.00075f / fabs(layer_list[i].largest_dimension / distance);
-			if(zrel > 1.0f)
+			if(zrel > 1.0f*Quality/10.0)
 				continue;
 		}
-        if(zrel>0.5f)
+        if(zrel>0.5f*Quality / 10.0)
         {
             alpha = alpha - (zrel-0.5f)*2.0f;
             if(alpha < 0.0f)
@@ -551,7 +565,7 @@ void GDSObject_ogl::RenderOGLSRefs(MATRIX4X4 object_view, bool HQ)
 					res = res * mod;
                 }
 
-				obj->RenderList(res, HQ);
+				obj->RenderList(res, HQ?10.0f:0.1f, false);
 			}
             
 		
@@ -597,7 +611,7 @@ void GDSObject_ogl::RenderOGLARefs(MATRIX4X4 object_view, bool HQ)
                             res = res * mod;
                         }
                         
-                        obj->RenderList(res, HQ);
+                        obj->RenderList(res, HQ?10.0f:1.0f, false);
                         
                     }
                 }

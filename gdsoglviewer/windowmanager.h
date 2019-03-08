@@ -72,6 +72,7 @@ public:
 	int visibility_checking;
 	int update;
 	bool assembly;
+	bool mergeVia;
 
 	// UI 
 	int screenHeight;

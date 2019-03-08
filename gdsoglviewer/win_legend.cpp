@@ -119,9 +119,11 @@ bool WinLegend::Event(int event, int data, int x, int y, bool shift, bool contro
 			current_layer = current_process->GetLayer((char*) eventinfo.Item->Text.c_str());
 
 			// Set layer visibility
-			if (current_layer)
+			if (current_layer) {
 				current_process->ChangeVisibility(current_layer, eventinfo.Item->Selected);
-			wm->getWorld()->_Objects->ClearNetList();
+				wm->getWorld()->_Objects->ClearNetList();
+			}
+
 		}
 	case LV_EVENT_STATE_CHANGED:
 	case LV_EVENT_CLICK:
