@@ -26,6 +26,8 @@ Contents:
        4.2.3 Topcell Selection
        4.2.4 Performance Counter
        4.2.5 Exploded View
+       4.2.6 Net Highlighting
+       4.2.7 Export to GMSH 
        
 5. Cadence Integration
 
@@ -150,6 +152,14 @@ Pressing the E key will "explode" the view. This means the starting height of ea
 Pressing the H key will start net tracing mode. The layout will turn grey and you can now left-click on the top of a metal to trace it. Only the trace will have color, making it easy to follow a line. Note that tracing ground and power lines can take a long time, press ESCAPE at any time to interrupt the tracing. In order for tracing to work properly, the process definition file must have the Metal parameter set to 1 for all metal layers (but NOT for VIA's). The tracer expects that the height and thickness of the layers are adjacent and that metals and via's alternate in the metal stack.
 
 ![ScreenShot](GDS3D_screenShot_Highlight.png)
+
+4.2.7 Export to GMSH (OneLab)
+
+Pressing the F key will export all geometry to a .geo file. Two files will be generate in the GmshOutPut Directory a <Top_GDS_Name>.geo and a <Top_GDS_Name>.pro with all material informations which come from the techfile. All material are hard code. So if you want to add material you must change code ... With those two files you can solve any problems based on FEM method.
+/!\ Still probleme with "VIA" not fully inside "Metal"
+
+![ScreenShot](GDS3D_GMSH_screenShot.png)
+
 
 5. Cadence Integration
 
