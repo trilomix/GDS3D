@@ -149,6 +149,8 @@ Pressing the E key will "explode" the view. This means the starting height of ea
 
 Pressing the H key will start net tracing mode. The layout will turn grey and you can now left-click on the top of a metal to trace it. Only the trace will have color, making it easy to follow a line. Note that tracing ground and power lines can take a long time, press ESCAPE at any time to interrupt the tracing. In order for tracing to work properly, the process definition file must have the Metal parameter set to 1 for all metal layers (but NOT for VIA's). The tracer expects that the height and thickness of the layers are adjacent and that metals and via's alternate in the metal stack.
 
+![ScreenShot](GDS3D_screenShot_Highlight.png)
+
 5. Cadence Integration
 
 5.1 Basic Setup
