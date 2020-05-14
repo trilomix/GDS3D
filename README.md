@@ -1,8 +1,11 @@
 GDS3D - An application used for rendering IC (chip) layouts in 3D.
+=
 University of Twente, Integrated Circuit Design Group
 http://www.icd.el.utwente.nl/
 
-An other repo (https://github.com/skuep/GDS3D) as the same source and add few improvement like compression with server/client process. This release add two major add featurs : assembly and export 3D model for GMSH. 
+An other repo (https://github.com/skuep/GDS3D) as the same source and add few improvement like compression with server/client process. 
+
+This release add two major add featurs : assembly and export 3D model for GMSH. 
 Assembly: this mean it’s possible to merge multi GDS (with different technologies)
 I also try to improve highlight net. 
 
@@ -11,17 +14,25 @@ Contents:
 2. Command line parameters
 3. Process definition files
 4. Using the program
+
    4.1 Controlling Movement
+   
    4.2 Interface Elements
+   
        4.2.1 Legend
        4.2.2 Rulers
        4.2.3 Topcell Selection
        4.2.4 Performance Counter
        4.2.5 Exploded View
+       
 5. Cadence Integration
+
    5.1 Basic Setup
+   
    5.2 Advanced Setup
+   
    5.3 Recommendations
+   
 6. Compiling the Code
 7. Keymap
 8. Contact Information
@@ -37,16 +48,20 @@ GDS3D is an application that can interpret so called IC layouts and render them 
 The program can be started from a command line using the following syntax:
 
         GDS3D -p <process definition file> -i <GDSII file> [-t <topcell>] [-f] [-u] [-h] [-v]
-   Or
+Or
+
         GDS3D -a <assembly definition file> [-t <topcell>] [-f] [-u] [-h] [-v]
 
 Required parameters:
+
         -p      Process definition file
         -i      GDSII file
-   Or
+Or
+
         -a      Assembly definition file
 
 Optional parameters:
+
         -t      Top cell, will default to top-most cell in GDS if omitted
         -f      Start in full screen mode
         -u      Disable GDS file monitoring, prevents updating the 3D view if the GDSII file is changed
