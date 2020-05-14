@@ -2,6 +2,10 @@ GDS3D - An application used for rendering IC (chip) layouts in 3D.
 University of Twente, Integrated Circuit Design Group
 http://www.icd.el.utwente.nl/
 
+An other repo (https://github.com/skuep/GDS3D) as the same source and add few improvement like compression with server/client process. This release add two major add featurs : assembly and export 3D model for GMSH. 
+Assembly: this mean it’s possible to merge multi GDS (with different technologies)
+I also try to improve highlight net. 
+
 Contents:
 1. Introduction
 2. Command line parameters
