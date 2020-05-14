@@ -9,6 +9,8 @@ This release add two major add featurs : assembly and export 3D model for GMSH.
 Assembly: this mean it’s possible to merge multi GDS (with different technologies)
 I also try to improve highlight net. 
 
+![ScreenShot](GDS3D_screenShot.png)
+
 Contents:
 1. Introduction
 2. Command line parameters
