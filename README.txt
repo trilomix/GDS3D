@@ -1,4 +1,4 @@
-GDS3D - An application used for rendering IC (chip) layouts in 3D.
+	GDS3D - An application used for rendering IC (chip) layouts in 3D.
 University of Twente, Integrated Circuit Design Group
 http://www.icd.el.utwente.nl/
 
