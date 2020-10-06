@@ -26,7 +26,9 @@
 // For the console output
 #ifdef WIN32
 	#include <filesystem>
-	#include <Windows.h>
+    #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+    #include <experimental/filesystem>
+    #include <Windows.h>
 	#include <WinBase.h>
 	#define OSSEP "\\"
 #else

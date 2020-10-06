@@ -668,7 +668,7 @@ struct ProcessLayer *GDSProcess::GetLayer(const char *Name)
 	layer = _FirstLayer;
 
 	while(layer){
-		if(strcmp(Name, layer->Name) == 0){
+		if(strlen(Name) == strlen(layer->Name) && strcmp(Name, layer->Name) == 0){
 			return layer;
 		}
 		layer = layer->Next;
