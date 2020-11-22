@@ -1,0 +1,267 @@
+# This file is a GDS3D techfile for the 130nm SkyWater SKY130 process.
+# 
+# Copyright (C) 2020 diadatp <admin@diadatp.com>
+# 
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License, or (at your option)
+# any later version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+# 
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# 
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+LayerStart: Substrate
+Layer: 255
+Datatype: 0
+Height: -10000.0
+Thickness: 10000.0
+Red: 0.15
+Green: 0.15
+Blue: 0.15
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Deep N-Well
+Layer: 64
+Datatype: 18
+Height: -100.0
+Thickness: 100.0
+Red: 0.0
+Green: 0.0
+Blue: 0.0
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: N-Well
+Layer: 64
+Datatype: 20
+Height: 0.0
+Thickness: 206.2
+Red: 0.4
+Green: 0.4
+Blue: 0.6
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Diffusion
+Layer: 65
+Datatype: 20
+Height: 206.2
+Thickness: 120.0
+Red: 0.4
+Green: 0.8
+Blue: 0.4
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Tap
+Layer: 65
+Datatype: 44
+Height: 206.2
+Thickness: 120.0
+Red: 0.8
+Green: 0.5
+Blue: 0.2
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Polysilicon
+Layer: 66
+Datatype: 20
+Height: 326.2
+Thickness: 180.0
+Red: 0.95
+Green: 0.05
+Blue: 0.05
+Filter: 0.0
+Metal: 1
+Show: 1
+LayerEnd
+
+LayerStart: Local Interconnect Contact
+Layer: 66
+Datatype: 44
+Height: 0.0
+Thickness: 936.1
+Red: 0.0
+Green: 0.0
+Blue: 0.0
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Local Interconnect
+Layer: 67
+Datatype: 20
+Height: 936.1
+Thickness: 100.0
+Red: 0.4
+Green: 0.3
+Blue: 0.6
+Filter: 0.0
+Metal: 1
+Show: 1
+LayerEnd
+
+LayerStart: Metal Contact
+Layer: 67
+Datatype: 44
+Height: 1036.1
+Thickness: 340.0
+Red: 0.9
+Green: 0.75
+Blue: 0.0
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Metal 1
+Layer: 68
+Datatype: 20
+Height: 1376.1
+Thickness: 360.0
+Red: 0.4
+Green: 0.6
+Blue: 0.9
+Filter: 0.0
+Metal: 1
+Show: 1
+LayerEnd
+
+LayerStart: Via
+Layer: 68
+Datatype: 44
+Height: 1736.1
+Thickness: 270.0
+Red: 0.0
+Green: 0.0
+Blue: 0.0
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Metal 2
+Layer: 69
+Datatype: 20
+Height: 2006.1
+Thickness: 360.0
+Red: 0.0
+Green: 0.0
+Blue: 1.0
+Filter: 0.0
+Metal: 1
+Show: 1
+LayerEnd
+
+LayerStart: Via 2
+Layer: 69
+Datatype: 44
+Height: 2366.1
+Thickness: 420.0
+Red: 0.0
+Green: 0.0
+Blue: 0.0
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Metal 3
+Layer: 70
+Datatype: 20
+Height: 2786.1
+Thickness: 845.0
+Red: 0.0
+Green: 0.0
+Blue: 1.0
+Filter: 0.0
+Metal: 1
+Show: 1
+LayerEnd
+
+LayerStart: CAPM
+Layer: 89
+Datatype: 44
+Height: 3731.1
+Thickness: 200.0
+Red: 0.5
+Green: 0.0
+Blue: 1.0
+Filter: 0.0
+Metal: 1
+Show: 1
+LayerEnd
+
+LayerStart: Via 3
+Layer: 70
+Datatype: 44
+Height: 3631.1
+Thickness: 390.0
+Red: 0.0
+Green: 0.0
+Blue: 0.0
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Metal 4
+Layer: 71
+Datatype: 20
+Height: 4021.1
+Thickness: 845.0
+Red: 0.6
+Green: 0.3
+Blue: 0.6
+Filter: 0.0
+Metal: 1
+Show: 1
+LayerEnd
+
+LayerStart: Via 4
+Layer: 71
+Datatype: 44
+Height: 4866.1
+Thickness: 505.0
+Red: 0.0
+Green: 0.0
+Blue: 0.0
+Filter: 0.0
+Metal: 0
+Show: 1
+LayerEnd
+
+LayerStart: Metal 5
+Layer: 72
+Datatype: 20
+Height: 5371.1
+Thickness: 1260.0
+Red: 0.3
+Green: 0.6
+Blue: 0.6
+Filter: 0.0
+Metal: 1
+Show: 1
+LayerEnd
+
