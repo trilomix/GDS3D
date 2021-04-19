@@ -423,7 +423,7 @@ int Wm_X11::main(int argc, char *argv[])
 		CWEventMask | CWOverrideRedirect, &set_attr );
 
 	// Window Title
-	char AppTitle[256];
+	char AppTitle[1024];
 	sprintf(AppTitle, "%s - %s - %s - IC Design Group, University of Twente", GDS3D_VERSION, filename, techname);
 	XStoreName( dpy, win, AppTitle );
 	XMapWindow( dpy, win );

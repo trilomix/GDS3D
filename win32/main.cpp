@@ -663,7 +663,7 @@ WPARAM WINAPI Wm_Win32::main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR
             dwStyle = WS_OVERLAPPEDWINDOW;
         }
 
-		char AppTitle[256];
+		char AppTitle[1024];
 		if(assembly)
 			sprintf(AppTitle, "%s  -  %s  -  IC Design Group, University of Twente", GDS3D_VERSION, filename);
 		else

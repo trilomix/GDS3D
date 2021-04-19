@@ -450,7 +450,7 @@ int Wm_X11::main(int argc, char *argv[])
 		CWEventMask | CWOverrideRedirect, &set_attr );
 
 	// Window Title
-	char AppTitle[256];
+	char AppTitle[1024];
 	if(assembly)
 		sprintf(AppTitle, "%s  -  %s  -  IC Design Group, University of Twente", GDS3D_VERSION, filename);
 	else
