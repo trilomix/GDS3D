@@ -71,9 +71,10 @@ GDSObject *GDSObjectList::SearchObject(const char *Name, const char *gdsName)
 	
 	for (unsigned int i = 0; i<objects.size(); i++)
 	{
-		char *GDSName = new char [strlen(objects[i]->GetName())];
-		strncpy(GDSName,Name, strlen(objects[i]->GetName()));
-		GDSName[strlen(objects[i]->GetName())] = '\0';
+		size_t namelen = strlen(objects[i]->GetName());
+		char *GDSName = new char [namelen+1];
+		strncpy(GDSName,Name, namelen);
+		GDSName[namelen] = '\0';
 		if(gdsName == NULL && objects[i]->GetGDSName()!= NULL 
 			&& strcmp(Name, objects[i]->GetGDSName()) == 0 
            && strcmp(GDSName, objects[i]->GetName()) == 0) {
