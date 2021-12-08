@@ -214,8 +214,9 @@ OpenGLView *view_gl; // Us this to access the Cocoa stuff
 
 - (void) resizeView
 {
-    int newHeight = self.window.initialFirstResponder.bounds.size.height;
-    int newWidth  = self.window.initialFirstResponder.bounds.size.width;
+    NSRect backingBounds = [self convertRectToBacking:[self bounds]];
+    int newHeight = backingBounds.size.height;
+    int newWidth  = backingBounds.size.width;
     
     if(viewWidth==newWidth && viewHeight==newHeight) // This function is called every frame...
         return;
