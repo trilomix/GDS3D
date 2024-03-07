@@ -127,7 +127,7 @@ void GDSParse::Reload()
 
 bool GDSParse::ParseFile(char *topcell)
 {
-	byte recordtype, datatype;
+	Byte recordtype, datatype;
 	char *tempstr;
 	//struct ProcessLayer *layer = NULL;
     
@@ -1086,7 +1086,7 @@ _currentstrans=0; //Oh yeah!
 
 short GDSParse::GetBitArray()
 {
-	byte byte1;
+	Byte byte1;
 
 	fread(&byte1, 1, 1, _iptr);
 	fread(&byte1, 1, 1, _iptr);
@@ -1097,8 +1097,8 @@ short GDSParse::GetBitArray()
 
 double GDSParse::GetEightByteReal()
 {
-	byte value;
-	byte b8, b2, b3, b4, b5, b6, b7;
+	Byte value;
+	Byte b8, b2, b3, b4, b5, b6, b7;
 	double sign=1.0;
 	double exponent;
 	double mant;

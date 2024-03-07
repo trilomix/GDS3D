@@ -112,13 +112,13 @@ typedef enum gds_element_type{
 
 /* Two consecutive zero bytes are a null word */
 
-typedef unsigned char byte;
+typedef unsigned char Byte;
 
 typedef struct gds_header{
 	short RecordLength;
-	byte RecordType;
-	byte DataType;
-	byte *Data;
+	Byte RecordType;
+	Byte DataType;
+	Byte *Data;
 }gds_header;
 
 /* A word consists of 16 bits, numbered from 0 to 15, left to right. */
