@@ -11,8 +11,10 @@
 //									-	Added special cases for row3 = (0, 0, 0, 1)
 //				17th December 2002	-	Converted from radians to degrees for consistency
 //										with OpenGL. Should have been done a long time ago...
+//							  2017  -   Some doubles to floats
 //
 //	Copyright (c) 2006, Paul Baker
+//	Copyright (c) 2017, Bertrand Pigeard
 //	Distributed under the New BSD Licence. (See accompanying file License.txt or copy at
 //	http://www.paulsprojects.net/NewBSDLicense.txt)
 //////////////////////////////////////////////////////////////////////////////////////////	

@@ -1,30 +1,31 @@
 ;  GDS3D, a program for viewing GDSII files in 3D.
 ;  Created by Jasper Velner and Michiel Soer, http://icd.el.utwente.nl
-;  Based on code by Roger Light, http://atchoo.org/gds2pov/
-;  
 ;  Copyright (C) 2013 IC-Design Group, University of Twente.
 ;
-;  This program is free software; you can redistribute it and/or modify
-;  it under the terms of the GNU General Public License as published by
-;  the Free Software Foundation; either version 2 of the License, or
-;  (at your option) any later version.
+;  Based on gds2pov by Roger Light, http://atchoo.org/gds2pov/ / https://github.com/ralight/gds2pov
+;  Copyright (C) 2004-2008 by Roger Light
 ;
+;  This program is free software; you can redistribute it and/or
+;  modify it under the terms of the GNU Lesser General Public
+;  License as published by the Free Software Foundation; either
+;  version 2.1 of the License, or (at your option) any later version.
+;  
 ;  This program is distributed in the hope that it will be useful,
 ;  but WITHOUT ANY WARRANTY; without even the implied warranty of
-;  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;  GNU General Public License for more details.
-;
-;  You should have received a copy of the GNU General Public License
-;  along with this program; if not, write to the Free Software
-;  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+;  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;  Lesser General Public License for more details.
+;  
+;  You should have received a copy of the GNU Lesser General Public
+;  License along with this program; if not, write to the Free Software
+;  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 ;; Path Configuration 
 
 ; Version of the program
-GDS3D_VERSION = "v1.8"
+GDS3D_VERSION = "v1.9"
 	
 ; Path to the server where GDS3D is located (and where in the skill subfolder this file is located)
-GDS3D_SRC = "/cadappl/ictools/3D_viewer/GDS3D_1.8/"
+GDS3D_SRC = "/cadappl/ictools/3D_viewer/GDS3D_1.9/"
 	
 ; Path where temporary files are put (usually in the user's workdirectory)
 GDS3D_DST = "~/GDS3D/"
@@ -120,8 +121,8 @@ procedure(icdWriteGDS3D()
 				return(t)
 			)
 		)
-		if( sh(strcat("cp " GDS3D_SRC "README.txt " GDS3D_DST )) == nil then 
-			if(isFile(strcat(GDS3D_SRC "README.txt")) == nil then
+		if( sh(strcat("cp " GDS3D_SRC "README.md " GDS3D_DST )) == nil then 
+			if(isFile(strcat(GDS3D_SRC "README.md")) == nil then
 				printf(strcat("Error: could not copy GDS3D readme to " GDS3D_DST "\n"))
 				return(t)
 			)

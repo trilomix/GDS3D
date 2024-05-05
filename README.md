@@ -3,11 +3,11 @@ GDS3D - An application used for rendering IC (chip) layouts in 3D.
 University of Twente, Integrated Circuit Design Group
 http://www.icd.el.utwente.nl/
 
-An other repo (https://github.com/skuep/GDS3D) as the same source and add few improvement like compression with server/client process. 
+Another repo (https://github.com/skuep/GDS3D) has the same source and adds compression with server/client process. 
 
-This release add two major add featurs : assembly and export 3D model for GMSH. 
+This release adds two major features : assembly and export 3D model for GMSH. 
 Assembly: this mean it’s possible to merge multi GDS (with different technologies)
-I also try to improve highlight net. 
+I also try to improve net highlight, fixed a few bugs, added support for large geometries. 
 
 ![ScreenShot](GDS3D_screenShot.png)
 
@@ -39,7 +39,7 @@ Contents:
    
 6. Compiling the Code
 7. Keymap
-8. Contact Information
+8. Contact Information & License
 
 
 1. Introduction
@@ -128,7 +128,7 @@ By pressing the M key, the program switches to mouse control mode. In this mode 
 4.2.1 Legend
 
 The program contains a legend, which can be toggled with the L key, from where the visibility of each layer can be toggled.
-Another way to show or hide layers is by pressing the control key and scrolling the mouse wheel. Scrolling up will hide the last visible layer (basically stripping away layers from the top with each �click�) and scrolling down will un-hide the last hidden layer. By using the alt instead of the control key, the same procedure can be used, except it will start from the bottom up.
+Another way to show or hide layers is by pressing the control key and scrolling the mouse wheel. Scrolling up will hide the last visible layer (basically stripping away layers from the top with each 'click') and scrolling down will un-hide the last hidden layer. By using the alt instead of the control key, the same procedure can be used, except it will start from the bottom up.
 The third and final way in which the user can toggle layer visibility if by using shortkeys defined in the process definition file.
 
 4.2.2 Rulers
@@ -169,13 +169,13 @@ A skill script is included with the source to enable integration of GDS3D into C
 
 First, put all of the GDS3D files on a server accessible to the users. In our case, this is at:
 
-	/cadappl/ictools/3D_viewer/GDS3D_1.8/
+	/cadappl/ictools/3D_viewer/GDS3D_1.9/
 	
 Next, open the icdGDS3D.il skill script in the skill subfolder and change the GDS3D_SRC variable into the path where you have put GDS3D. This way the script knows its own location.
 
 After starting Cadence for the first time, load this script by entering something like this:
 
-	load("/cadappl/ictools/3D_viewer/GDS3D_1.8/skill/icdGDS3D.il")
+	load("/cadappl/ictools/3D_viewer/GDS3D_1.9/skill/icdGDS3D.il")
 	
 into your Virtuoso window. A new ICD-Tools menu-item has been added in the Virtuoso screen with items:
 
@@ -275,7 +275,25 @@ Wheel Up/Down:      Move Up/Down
 <Ctrl> Wheel Up:    Hide Last Visible Layer / Change Ruler Layer
 <Ctrl> Wheel Down:  Show Last Invisible Layer / Change Ruler Layer
 
-8. Contact Information
+8. Contact Information & License
+
+GDS3D is created by Jasper Velner and Michiel Soer, from the Integrated Circuit Design Group of the University of Twente: http://www.icd.el.utwente.nl/
+
+GDS3D is based on the gds2pov project by Roger Light: http://atchoo.org/gds2pov/ / https://github.com/ralight/gds2pov
+
+GDS3D uses a math library copyright (c) 2006, Paul Baker.
+All rights reserved.
+
+GDS3D uses the Clipper library copyright (c) 2010-2015 Angus Johnson.
+
+GDS3D uses the Voro++ library copyright (c) 2008, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
+All rights reserved.
+
+GDS3D uses some code from the Gmsh software project copyright (c) 1997-2017 C. Geuzaine, J.-F. Remacle.
+
+GDS3D is free software. Please check the accompanying license files for more details.
+Due to the use of the Gmsh code, this version of GDS3D will be licensed under the GNU General Public License 2.
+Without Gmsh code, this software package is compatible with the LGPL2.1 license.
 
 If you are having difficulties running this program, don't hesitate to contact me for free support through the GitHub website:
 
