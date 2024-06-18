@@ -7,8 +7,10 @@
 //									-	Some speed Improvements
 //									-	Corrected Lerp
 //				7th January 2003	-	Added QuadraticInterpolate
+//							  2017  -   Some floats to doubles
 //
 //	Copyright (c) 2006, Paul Baker
+//	Copyright (c) 2017, Bertrand Pigeard
 //	Distributed under the New BSD Licence. (See accompanying file License.txt or copy at
 //	http://www.paulsprojects.net/NewBSDLicense.txt)
 //////////////////////////////////////////////////////////////////////////////////////////	

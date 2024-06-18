@@ -1,22 +1,25 @@
 //  GDS3D, a program for viewing GDSII files in 3D.
-//  Created by Jasper Velner and Michiel Soer, http://icd.el.utwente.nl
-//  Based on code by Roger Light, http://atchoo.org/gds2pov/
-//  
+//  Created by Jasper Velner and Michiel Soer, IC-Design Group, University of Twente: http://icd.el.utwente.nl
+//
+//  Copyright (C) 2019 Bertrand Pigeard
 //  Copyright (C) 2013 IC-Design Group, University of Twente.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Based on gds2pov by Roger Light, http://atchoo.org/gds2pov/ / https://github.com/ralight/gds2pov
+//  Copyright (C) 2004-2008 by Roger Light
 //
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License, or (at your option) any later version.
+//  
 //  This program is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//  
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "windowmanager.h"
 #include "win_topmap.h"
@@ -78,9 +81,15 @@ bool WindowManager::commandLineParameters(int argc, char *argv[])
 {
 	v_printf(1, "\n");
 	v_printf(1, "==============================================================================\n");
-	v_printf(1, GDS3D_VERSION); v_printf(1, ", Copyright (C) 2013 IC-Design Group, University of Twente\n");
+	v_printf(1, GDS3D_VERSION); v_printf(1, ", Copyright (C) 2022 Bertrand Pigeard\n");
+	v_printf(1, "Copyright (C) 2013 IC-Design Group, University of Twente\n");
 	v_printf(1, "Created by Jasper Velner and Michiel Soer, http://icd.el.utwente.nl\n");
-	v_printf(1, "Based on code by Roger Light, http://atchoo.org/gds2pov/\n");	
+	v_printf(1, "Based on the gds2pov project by Roger Light, http://atchoo.org/gds2pov/\n");	
+	v_printf(1, "Copyright (C) 2004-2008 by Roger Light\n");
+	v_printf(1, "Gmsh software project copyright (C) 1997-2017 C. Geuzaine, J.-F. Remacle.\n");
+	v_printf(1, "Voro++ copyright (c) 2008, The Regents of the University of California, through\nLawrence Berkeley National Laboratory (subject to receipt of any required\napprovals from the U.S. Dept. of Energy). All rights reserved.\n");
+	v_printf(1, "Math library copyright (C) 2006 by Paul Baker\n");
+	v_printf(1, "This program comes with ABSOLUTELY NO WARRANTY. You may distribute it freely\nas described in the readme.txt distributed with this file.\n");	
 	v_printf(1, "==============================================================================\n\n");
 
 	if(argc<2){

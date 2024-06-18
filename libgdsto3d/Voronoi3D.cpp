@@ -1,4 +1,13 @@
-
+// Updates for GDS3D
+// Copyright (C) 2019 Bertrand Pigeard
+//
+// Gmsh - Copyright (C) 1997-2017 C. Geuzaine, J.-F. Remacle
+//
+// See the LICENSE.txt file for license information. Please report all
+// bugs and problems to the public mailing list <gmsh@onelab.info>.
+//
+// Contributor(s):
+//   Tristan Carrier
 
 #if defined(_OPENMP)
   #include <omp.h>
