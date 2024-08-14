@@ -226,7 +226,7 @@ For Windows:
 
 For Linux:
 - Depending on your distribution, make sure you have installed the development packages of G++, GL, GLU, GLX and X11. (It helps to install G++ 4.5 or higher)
-- On Ubuntu, these are: g++, libgl1-mesa-devel, libglu1-mesa-devel and libx11-dev
+- On Ubuntu, these are: g++, libgl1-mesa-dev, libglu1-mesa-dev and libx11-dev
 - Open a terminal to the GDS3D path
 - Run: make -C linux
 - To clean, run: make -C linux clean
