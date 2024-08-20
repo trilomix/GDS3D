@@ -1,6 +1,6 @@
 # Flags
-CC=g++
-CFLAGS=-c -w -O1 -I ../math/ -I ../gdsoglviewer/ -I ../libgdsto3d/
+CXX=g++
+CXXFLAGS=-std=c++11 -c -w -O1 -I ../math/ -I ../gdsoglviewer/ -I ../libgdsto3d/
 LDFLAGS=-L/usr/X11R6/lib64/ -lX11 -lGL -static-libgcc -static-libstdc++ -fopenmp
 # Static linking of stdc++ available starting at GCC 4.5
 
@@ -26,10 +26,10 @@ EXECUTABLE=./GDS3D
 all: $(SOURCES) $(HEADERS) $(EXECUTABLE)
 	
 $(EXECUTABLE): $(OBJECTS) 
-	$(CC) $(OBJECTS) -o $@ $(LDFLAGS)
+	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
 
 .cpp.o:
-	$(CC) $(CFLAGS) $< -o $@
+	$(CXX) $(CXXFLAGS) $< -o $@
 
 clean: # Clean object files
 	rm -f $(OBJECTS) 
