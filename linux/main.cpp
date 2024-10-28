@@ -496,7 +496,17 @@ int Wm_X11::main(int argc, char *argv[])
 	font = glGenLists( 256 );
 
 	fixed = XLoadQueryFont(
-		dpy, "-misc-fixed-medium-r-*-*-20-*-*-*-*-*-*-*" );
+		dpy, "-*-fixed-*-*-*-*-*-*-*-*-*-*-*-*" );
+
+	if ( fixed == NULL )
+	{
+		fprintf( stderr, "XLoadQueryFont failed\n" );
+		glXDestroyContext( dpy, ctx );
+		XDestroyWindow( dpy, win );
+		XCloseDisplay( dpy );
+        XFree(vi);
+		return ( 1 );
+	}
 
 	null_cursor = XCreateGlyphCursor(
 		dpy, fixed->fid, fixed->fid, ' ', ' ', &black, &black );
