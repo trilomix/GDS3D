@@ -494,9 +494,11 @@ int Wm_X11::main(int argc, char *argv[])
 	}
 
 	font = glGenLists( 256 );
-
-	fixed = XLoadQueryFont(
-		dpy, "-misc-fixed-medium-r-*-*-20-*-*-*-*-*-*-*" );
+	if (!(fixed = XLoadQueryFont(dpy, "-misc-fixed-medium-r-*-*-20-*-*-*-*-*-*-*" )))
+	  {
+	    perror("XLoadQueryFont error : ");
+	    return (-1);
+	  }
 
 	null_cursor = XCreateGlyphCursor(
 		dpy, fixed->fid, fixed->fid, ' ', ' ', &black, &black );
