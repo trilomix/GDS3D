@@ -39,6 +39,7 @@ WinKeymap::WinKeymap()
 	item->Text = "INTERFACE"; AddItem(item);
 	//item->Text = (char*)"<ALT> F4:           Exit Program"; AddItem(item); item->Index++;  // Does not always work..
 	item->Text = "F1:                 Toggle Keymap"; AddItem(item);
+	item->Text = "F5:                 Reload GDS from disk"; AddItem(item);
 	item->Text = "F8:                 Capture Screenshot"; AddItem(item);
 	item->Text = "P:                  Toggle Performance Counter"; AddItem(item);
 	item->Text = "L:                  Toggle Legend"; AddItem(item);
@@ -58,7 +59,9 @@ WinKeymap::WinKeymap()
 	item->Text = "D, Right:           Right"; AddItem(item);
 	item->Text = "Q:                  Up"; AddItem(item);
 	item->Text = "Z:                  Down"; AddItem(item);
-	item->Text = "Hold Shift:         Increase Movement Speed"; AddItem(item);
+	item->Text = "Hold Shift:         Decrease Movement Speed"; AddItem(item);
+	item->Text = "Hold CTRL:          Pan view (Up/Down/Left/Right keys)"; AddItem(item);
+	item->Text = "Hold ALT:           Move Up/Down (Up/Down keys)"; AddItem(item);
 	item->Text = "  "; AddItem(item); // Must be unique from the first space item
 	item->Text = "MOUSE"; AddItem(item);
 	item->Text = "Hold Left Button:   Rotate"; AddItem(item);

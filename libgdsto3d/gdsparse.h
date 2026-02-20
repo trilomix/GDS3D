@@ -30,7 +30,7 @@
 
 #ifndef __GDSPARSE_H__
 #define __GDSPARSE_H__
-#define MAXLAYERS 2048
+#define MAXLAYERS 2048*10
 
 #include "process_cfg.h"
 #include "gds_globals.h"

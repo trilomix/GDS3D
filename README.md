@@ -42,12 +42,12 @@ Contents:
 8. Contact Information & License
 
 
-1. Introduction
+## 1. Introduction
 
 GDS3D is an application that can interpret so called IC layouts and render them in 3D. The program accepts standard GDSII files as input data. Along with the layout file, it requires a so called process definition file which contains the 3D parameters of the process being used. These files combined allow the program to create a 3D representation of the layout, where the user has full, real time control over the camera position and angle, much like in a 3D video game.
 
 
-2. Command line parameters
+## 2. Command line parameters
 
 The program can be started from a command line using the following syntax:
 
@@ -84,7 +84,7 @@ There are also run scripts for each OS that will load an example GDSII file in a
         Linux:      <Program folder>/RunLinux.sh
         MacOS:      <Program folder>/RunMac.command
 
-3. Process definition files
+## 3. Process definition files
 
 The process definition files contain the physical properties of the process being used, as well as color mappings for each layer. These files are simply text files listing every layer in the process along with its properties. An example layer, taken from the mock-up process that comes with the program, is defined as follows:
 
@@ -113,47 +113,51 @@ Toggling layer visibility while the program is running can be easily achieved by
 One extra option can be added to a layer, which is "Datatype". This can normally be omitted, as most in processes different datatypes with the same layer number do not mean physically different layers. However, the developers have heard of one case where N-Well and P-Well "layers" actually had the same layer number but different datatypes. In such an event one can specify two layers with the same layer number but differing datatypes to render these layers in, for example, different colors.
 
 
-4. Using the program
+## 4. Using the program
 
-4.1 Controlling Movement
+### 4.1 Controlling Movement
 
 When the program is running, it is possible to move the camera around using the classical 3D-game controls, the A,W,S,D (or the arrow) keys. The Q and Z keys are used to move the camera up and down and the R key can be used to reset the view.
+
+The view can also be panned (translated) using the arrow keys while holding the CTRL key. Holding ALT while pressing the Up or Down arrow keys moves the camera up or down, as an alternative to the Q and Z keys.
+
+The F5 key can be used to reload the GDSII file from disk without restarting the program, which is useful when the layout is being actively modified in a design tool.
 
 Initially the program has a traditional mouse cursor. In this mode the user can rotate the view by pressing the left mouse button and dragging the mouse to the left or right to rotate the view, and up or down to tilt the view. Dragging the mouse while holding the right mouse button will strafe the view for left or right motion, and move forwards or backwards for up or down motion. Finally, the scroll wheel can be used to move up or down.
 
 By pressing the M key, the program switches to mouse control mode. In this mode the mouse can be used to rotate and tilt the camera much like in a 3D-game. The scroll wheel can still be used to move up and down.
 
-4.2 Interface Elements
+### 4.2 Interface Elements
 
-4.2.1 Legend
+#### 4.2.1 Legend
 
 The program contains a legend, which can be toggled with the L key, from where the visibility of each layer can be toggled.
 Another way to show or hide layers is by pressing the control key and scrolling the mouse wheel. Scrolling up will hide the last visible layer (basically stripping away layers from the top with each 'click') and scrolling down will un-hide the last hidden layer. By using the alt instead of the control key, the same procedure can be used, except it will start from the bottom up.
 The third and final way in which the user can toggle layer visibility if by using shortkeys defined in the process definition file.
 
-4.2.2 Rulers
+#### 4.2.2 Rulers
 
 It is also possible to create a ruler, by pressing the K button. A red plane will appear in the layout. You can click with the left mouse button on points on the plane to define the ruler. To measure in a different layer, hold the CTRL key and scroll with your mouse wheel.
 
-4.2.3 Topcell Selection
+#### 4.2.3 Topcell Selection
 
 By pressing the T key the user can bring up a list of all the cells in the GDSII file. By clicking one of these cells it will become the "top cell", meaning only it and its sub-cells will be rendered. The cells in this window are hierachically ordered, click on the triangles to open up new hierarchy levels.
 
-4.2.4 Performance Counter
+#### 4.2.4 Performance Counter
 
 The P key brings up a performance counter. This counter shows the number of frames per second, as well as the number of triangles being rendered at a given moment.
 
-4.2.5 Exploded View
+#### 4.2.5 Exploded View
 
 Pressing the E key will "explode" the view. This means the starting height of each layer will be multiplied by a constant value, basically creating gaps between the layers. This can for example be useful when viewing fringe capacitances.
 
-4.2.6 Net Highlighting (Tracing)
+#### 4.2.6 Net Highlighting (Tracing)
 
 Pressing the H key will start net tracing mode. The layout will turn grey and you can now left-click on the top of a metal to trace it. Only the trace will have color, making it easy to follow a line. Note that tracing ground and power lines can take a long time, press ESCAPE at any time to interrupt the tracing. In order for tracing to work properly, the process definition file must have the Metal parameter set to 1 for all metal layers (but NOT for VIA's). The tracer expects that the height and thickness of the layers are adjacent and that metals and via's alternate in the metal stack.
 
 ![ScreenShot](GDS3D_screenShot_Highlight.png)
 
-4.2.7 Export to GMSH (OneLab)
+#### 4.2.7 Export to GMSH (OneLab)
 
 Pressing the F key will export all geometry to a .geo file. Two files will be generate in the GmshOutPut Directory a <Top_GDS_Name>.geo and a <Top_GDS_Name>.pro with all material informations which come from the techfile. All material are hard code. So if you want to add material you must change code ... With those two files you can solve any problems based on FEM method.
 /!\ Still probleme with "VIA" not fully inside "Metal"
@@ -161,9 +165,9 @@ Pressing the F key will export all geometry to a .geo file. Two files will be ge
 ![ScreenShot](GDS3D_GMSH_screenShot.png)
 
 
-5. Cadence Integration
+## 5. Cadence Integration
 
-5.1 Basic Setup
+### 5.1 Basic Setup
 
 A skill script is included with the source to enable integration of GDS3D into Cadence, it is located in the skill subfolder. This script is designed to be loaded at Cadence startup, it will automatically export GDS files from layout into a temporary location on the user's workspace and modify the run scripts to run GDS3D with the exported GDS and correct process definition file.
 
@@ -192,7 +196,7 @@ It contains the appropriate run scripts and gds file to run GDS3D with the layou
 
 In the skill script, the GDS3D_DST variable dictates where these temporary files are put. There is also a GDS3D_LOCAL_COPY variable, which when set to true will copy the executables and techfiles to the user workspace as well. This will allow you to run the viewer without needing server access (works create with SMB over a windows network).
 
-5.2 Advanced Setup
+### 5.2 Advanced Setup
 
 In some cases there might be problems with the GDS exporting in Cadence 5 (Cadence 6 looks good so far). This is because some design kits have convoluted ways of exporting GDS files, especially with specifying layermap files. If this is the case, follow these instructions.
 
@@ -202,7 +206,7 @@ Please check if you can manually load in the exported GDS into GDS3D by using th
 
 Use Layout->GDS3D from the ICD-Tools menu again to test the new setup. The skill script will detect the template file and stream out using these settings, instead of the default settings.
 
-5.3 Recommendations
+### 5.3 Recommendations
 
 For a smooth experience, we have some recommendations for your hardware and software setup.
 
@@ -214,7 +218,7 @@ If your clients are running Windows and you are looking for a X Windows client, 
 
 Thin clients working with NX Machine or VNC are not suitable, as they render graphics on the server and transfer pixels only. In this case, you can try to set the GDS3D_LOCAL_COPY variable to true, and access your workspace through SMB or FTP and run the viewer locally.
 
-6. Compiling the Code
+## 6. Compiling the Code
 
 The compiled executables delivered in the packages should work on Windows XP, OS X Snow Leopard, Linux Kernel 2.5, and higher. If you are having difficulties, you can recompile the source.
 
@@ -241,41 +245,53 @@ Or:
 - Run: make -C mac
 - To clean, run: make -C mac clean
  
-7. Keymap
+## 7. Keymap
 
-Interface: 
-F1:                 Toggle Keymap
-F8:                 Take Screenshot
-P:                  Toggle Performance Counter
-L:                  Toggle Legend
-T:                  Topcell selection
-R:                  Reset View
-E:                  Toggle Exploded View
-F:                  OutPut to gmsh (geo File)
-K:                  Enable Ruler
-H:                  Enable Net Highlighting
-ESC:                Cancel
+### Interface
 
-Motion:
-M:                  Lock Mouse
-W, Up:              Forward
-S, Down:            Backward
-A, Left:            Left
-D, Right:           Right
-Q:                  Up
-Z:                  Down
-Hold Shift:         Increase Movement Speed
+| Key | Action |
+|-----|--------|
+| F1  | Toggle Keymap |
+| F5  | Reload GDS from disk |
+| F8  | Take Screenshot |
+| P   | Toggle Performance Counter |
+| L   | Toggle Legend |
+| T   | Topcell selection |
+| R   | Reset View |
+| E   | Toggle Exploded View |
+| F   | Output to gmsh (geo File) |
+| K   | Enable Ruler |
+| H   | Enable Net Highlighting |
+| ESC | Cancel |
 
-Mouse Special:
-Hold Left Button:   Rotate
-Hold Right Button:  Walk and Strafe
-Wheel Up/Down:      Move Up/Down
-<Alt> Wheel Up:     Show First Invisible Layer
-<Alt> Wheel Down:   Hide First Visible Layer
-<Ctrl> Wheel Up:    Hide Last Visible Layer / Change Ruler Layer
-<Ctrl> Wheel Down:  Show Last Invisible Layer / Change Ruler Layer
+### Motion
 
-8. Contact Information & License
+| Key                        | Action                                      |
+|----------------------------|---------------------------------------------|
+| M                          | Lock Mouse                                  |
+| W, Up                      | Forward                                     |
+| S, Down                    | Backward                                    |
+| A, Left                    | Left                                        |
+| D, Right                   | Right                                       |
+| Q                          | Up                                          |
+| Z                          | Down                                        |
+| Hold Shift                 | Increase Movement Speed                     |
+| Ctrl + Up/Down/Left/Right  | Pan View                                    |
+| Alt + Up/Down              | Move Up/Down (alternative to Q/Z)          |
+
+### Mouse Special
+
+| Action              | Result                                           |
+|---------------------|--------------------------------------------------|
+| Hold Left Button    | Rotate                                           |
+| Hold Right Button   | Walk and Strafe                                  |
+| Wheel Up/Down       | Move Up/Down                                     |
+| Alt + Wheel Up      | Show First Invisible Layer                       |
+| Alt + Wheel Down    | Hide First Visible Layer                         |
+| Ctrl + Wheel Up     | Hide Last Visible Layer / Change Ruler Layer     |
+| Ctrl + Wheel Down   | Show Last Invisible Layer / Change Ruler Layer   |
+
+## 8. Contact Information & License
 
 GDS3D is created by Jasper Velner and Michiel Soer, from the Integrated Circuit Design Group of the University of Twente: http://www.icd.el.utwente.nl/
 

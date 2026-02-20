@@ -31,6 +31,8 @@
 
 #include "main.h"
 
+#include <time.h>
+
 EventKey Wm_X11::translateKey(int key)
 {
 	switch(key)
@@ -372,9 +374,11 @@ bool Wm_X11::query_update(FILE *f)
 
 	if(!fstat(fileno(f), &attrib))
 	{
-		//v_printf(1, "Statting file..\n");
+		// v_printf(1, "Statting file.. last access (%s) modification (%s) - status change (%s)\n", ctime(&attrib.st_atime), ctime(&attrib.st_mtime), ctime(&attrib.st_ctime));
+
 		if(low_date_time[f] != attrib.st_mtime && attrib.st_size > 0) // Is the file updated?
 		{
+			v_printf(1, "file updated..\n");
 			low_date_time[f] = attrib.st_mtime;
 			return true;
 		}
@@ -390,7 +394,8 @@ int Wm_X11::main(int argc, char *argv[])
 		return 0;
 
 	// Create window
-	int vi_attr[] =
+	// Legacy attribute list for glXChooseVisual (GLX < 1.3)
+	int vi_attr_legacy[] =
 	{
 		GLX_RGBA,
 		GLX_DOUBLEBUFFER,
@@ -404,8 +409,20 @@ int Wm_X11::main(int argc, char *argv[])
 		None
 	};
 
+	// Modern attribute list for glXChooseFBConfig (GLX >= 1.3)
+	int vi_attr[] = { 
+		GLX_RENDER_TYPE, GLX_RGBA_BIT,
+		GLX_RED_SIZE, 8,
+		GLX_GREEN_SIZE, 8,
+		GLX_BLUE_SIZE, 8,
+		GLX_DEPTH_SIZE, 1,
+		GLX_DOUBLEBUFFER, 1,
+		GLX_STEREO, 0,
+		GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
+		None, None, None };
+	
 	XVisualInfo *vi;
-    Window root_win;
+	Window root_win;
 	XWindowAttributes win_attr;
 	XSetWindowAttributes set_attr;
 	XFontStruct *fixed;
@@ -420,12 +437,33 @@ int Wm_X11::main(int argc, char *argv[])
 		return( 1 );
 	}
 
-	if( ( vi = glXChooseVisual( dpy, DefaultScreen( dpy ),
-		vi_attr ) ) == NULL )
+	// Try glXChooseFBConfig first. It is preferred over glXChooseVisual because some X servers
+	// (e.g. newer hardware drivers) reject the older glXChooseVisual attribute format.
+	// glXChooseFBConfig returns NULL if no config matches the requested attributes. In that rare case, fall back to glXChooseVisual.
+	GLXFBConfig *fbc;
+	int nelements;
+	fbc = glXChooseFBConfig( dpy, DefaultScreen( dpy ), vi_attr, &nelements );
+	if( fbc != NULL )
 	{
-		fprintf( stderr, "glXChooseVisual failed\n" );
-		XCloseDisplay( dpy );
-		return( 1 );
+		vi = glXGetVisualFromFBConfig( dpy, fbc[0] );
+		XFree( fbc );
+		if( vi == NULL )
+		{
+			fprintf( stderr, "glXGetVisualFromFBConfig failed\n" );
+			XCloseDisplay( dpy );
+			return( 1 );
+		}
+	}
+	else
+	{
+		// No FBConfig matched the requested attributes; fall back to legacy glXChooseVisual
+		if( ( vi = glXChooseVisual( dpy, DefaultScreen( dpy ),
+			vi_attr_legacy ) ) == NULL )
+		{
+			fprintf( stderr, "glXChooseVisual failed\n" );
+			XCloseDisplay( dpy );
+			return( 1 );
+		}
 	}
 
 	root_win = RootWindow( dpy, vi->screen );

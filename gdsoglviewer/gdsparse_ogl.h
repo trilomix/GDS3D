@@ -107,6 +107,7 @@ public:
 	void gl_drawcapturing();
 	void gl_draw();
 	void query_update();
+	void force_update();
 	void gl_draw_world(int width, int height, bool HQ);
 	void gl_printf( GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha, GLint x, GLint y, const char *format, ... );
 	void gl_event( int event, int data, int xpos, int ypos , bool shift = false, bool control = false, bool alt=false);
